@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
-    <!-- Favicon Diperbarui menggunakan file jpg yang ada -->
-    <link rel="icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
-    <link rel="shortcut icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
+    <!-- Favicon Diperbarui menggunakan nama file yang tepat -->
+    <link rel="icon" href="mbah%20dirin.png" type="image/png">
+    <link rel="shortcut icon" href="mbah%20dirin.png" type="image/png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -197,8 +197,9 @@
                                 <i class="fas fa-sync-alt" :class="{'animate-spin': isRefreshing}"></i>
                             </button>
 
-                            <button @click="isAddFormOpen = true" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex items-center gap-2 shadow-md" title="Tambah Data Baru">
-                                <i class="fas fa-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah Data</span>
+                            <!-- Tombol Buka Form (Tambah Anggota) -->
+                            <button @click="openForm('add')" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex items-center gap-2 shadow-md" title="Tambah Data Baru">
+                                <i class="fas fa-user-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah Anggota</span>
                             </button>
 
                             <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition" title="Pengaturan Spreadsheet">
@@ -227,7 +228,6 @@
                                     <td class="p-3 text-center text-gray-500">{{ index + 1 }}</td>
                                     <td class="p-3 text-center">
                                         <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
-                                            <!-- Validasi keamanan data dengan && -->
                                             <img v-if="item && item.foto" :src="item.foto" class="w-full h-full object-cover">
                                             <i v-else class="fas fa-user text-gray-400 text-xs"></i>
                                         </div>
@@ -242,10 +242,10 @@
                                             <button @click="openDetailModal(item)" class="bg-[#00d0f1] hover:bg-[#00b8d4] text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Detail">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <button @click="handleEditOrDelete('edit')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Edit Data">
+                                            <button @click="openForm('edit', item)" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Edit Data">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button @click="handleEditOrDelete('delete')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Hapus Data">
+                                            <button @click="deleteMember(item.id)" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Hapus Data">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -313,7 +313,6 @@
                             <p class="mt-4 text-xs text-gray-500">Dicetak pada: {{ new Date().toLocaleDateString('id-ID') }}</p>
                         </div>
                         <div class="max-w-4xl mx-auto space-y-4">
-                            <!-- Rekursif Buku dirender via method -->
                             <div v-html="generateBookHTML(treeData)"></div>
                             <div v-if="treeData.length === 0" class="text-center text-gray-400 py-10">Data kosong.</div>
                         </div>
@@ -426,65 +425,178 @@
             </div>
         </div>
 
-        <!-- MODAL: TAMBAH DATA -->
-        <div v-if="isAddFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isAddFormOpen = false">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden transform transition-all">
-                <div class="bg-gradient-to-r from-emerald-800 to-emerald-600 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-user-plus"></i> Tambah Anggota Keluarga</h3>
-                    <button @click="isAddFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+        <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
+        <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
+            <div class="bg-[#f3f4f6] rounded-2xl shadow-2xl w-full max-w-4xl my-6 overflow-hidden">
+                <!-- Header -->
+                <div class="bg-white px-8 py-5 flex items-center border-b border-gray-200">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mr-4">
+                        <i :class="formMode === 'add' ? 'fas fa-user-plus' : 'fas fa-user-edit'"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-xl font-bold text-gray-800">{{ formMode === 'add' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
+                        <p class="text-sm text-gray-500">Lengkapi atau ubah data silsilah di bawah ini</p>
+                    </div>
+                    <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl transition">&times;</button>
+                </div>
+
+                <!-- Petunjuk Simpan Sementara -->
+                <div class="px-8 pt-4 pb-2">
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 text-[13px] px-4 py-2.5 rounded-lg flex items-start gap-2">
+                        <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
+                        <p><strong>Peringatan:</strong> Menyimpan (termasuk Foto) dari halaman ini hanya bersifat <strong>Preview Lokal (Sementara)</strong> di perangkat Anda. Jika Anda Refresh (F5), data akan kembali ke semula sesuai isi Google Spreadsheet. Agar data/foto permanen untuk semua orang, Anda harus memperbaruinya manual di Google Spreadsheet.</p>
+                    </div>
                 </div>
                 
-                <form @submit.prevent="saveNewMember" class="p-6">
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-6 text-sm text-yellow-800 rounded">
-                        <strong>Info:</strong> Data yang ditambahkan di form ini akan tampil <strong>sementara</strong> di aplikasi untuk Preview. Untuk menyimpan secara permanen, salin data langsung ke <a href="https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/edit?usp=sharing" target="_blank" class="text-blue-600 font-bold underline">Google Spreadsheet</a>.
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100 md:col-span-1 flex flex-col items-center">
-                            <h4 class="font-bold text-emerald-800 border-b pb-2 mb-3 text-sm uppercase tracking-wide w-full text-center">Foto Profil</h4>
-                            
-                            <div class="w-32 h-32 rounded-full border-4 border-emerald-100 shadow-md overflow-hidden bg-white flex items-center justify-center relative group mb-2">
-                                <img v-if="formMember && formMember.foto" :src="formMember.foto" class="w-full h-full object-cover">
-                                <i v-else class="fas fa-camera text-4xl text-gray-300"></i>
-                                
-                                <label class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                    <span class="text-xs font-medium"><i class="fas fa-upload mb-1 block text-lg"></i> Upload</span>
-                                    <input type="file" accept="image/*" class="hidden" @change="handleFotoUpload">
-                                </label>
+                <form @submit.prevent="saveMember" class="p-8 pt-4 space-y-6">
+                    
+                    <!-- KARTU 1: INFORMASI DASAR -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fas fa-id-card"></i> INFORMASI DASAR
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap *</label>
+                                <input required v-model="formMember.namaLengkap" type="text" placeholder="Masukkan nama sesuai KTP" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
-                        </div>
-
-                        <div class="md:col-span-2 space-y-6">
-                            <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                <h4 class="font-bold text-emerald-800 border-b pb-2 mb-3 text-sm uppercase tracking-wide">Data Pribadi</h4>
-                                
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                                    <input required v-model="formMember.namaLengkap" type="text" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition">
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-600 mb-1">Panggilan</label>
-                                        <input v-model="formMember.panggilan" type="text" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Kelamin</label>
-                                        <select v-model="formMember.jk" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition">
-                                            <option value="L">Laki-laki</option>
-                                            <option value="P">Perempuan</option>
-                                        </select>
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Panggilan</label>
+                                <input v-model="formMember.panggilan" type="text" placeholder="Nama akrab sehari-hari" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin *</label>
+                                <select required v-model="formMember.jk" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option value="" disabled>Pilih Gender...</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Keluarga *</label>
+                                <select required v-model="formMember.statusRelasi" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option value="" disabled>Pilih Status...</option>
+                                    <option>Leluhur Utama</option>
+                                    <option>Garis Keturunan</option>
+                                    <option>Anak</option>
+                                    <option>Cucu</option>
+                                    <option>Cicit</option>
+                                    <option>Menantu</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-200">
-                        <button type="button" @click="isAddFormOpen = false" class="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Batal</button>
-                        <button type="submit" class="px-6 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md flex items-center gap-2">
-                            <i class="fas fa-save"></i> Simpan Data Preview
+                    <!-- KARTU 2: KELAHIRAN & KEHIDUPAN -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="far fa-calendar-alt"></i> KELAHIRAN & KEHIDUPAN
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tempat Lahir</label>
+                                <input v-model="formMember.tempatLahir" type="text" placeholder="Kota/Kabupaten" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
+                                <input v-model="formMember.tglLahir" type="date" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kehidupan</label>
+                                <select v-model="formMember.statusKehidupan" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option>Hidup</option>
+                                    <option>Wafat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-if="formMember.statusKehidupan === 'Wafat'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 pt-5 border-t border-gray-100">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Wafat</label>
+                                <input v-model="formMember.tglWafat" type="date" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Makam</label>
+                                <input v-model="formMember.makam" type="text" placeholder="Tulis nama/lokasi makam" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 3: GARIS SILSILAH & PERNIKAHAN -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fas fa-sitemap"></i> GARIS SILSILAH & PERNIKAHAN
+                        </h4>
+                        <div class="mb-5">
+                            <label class="block text-xs font-bold text-emerald-700 mb-1">Hubungkan ke Pohon: Pilih Induk/Orang Tua Utama *</label>
+                            <select required v-model="formMember.parentId" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-800 font-medium">
+                                <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
+                                <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-1">Ini menentukan di bawah siapa orang ini akan muncul dalam garis bagan pohon.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Ayah Kandung</label>
+                                <input v-model="formMember.namaAyah" type="text" placeholder="Atau ketik manual jika tidak ada" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Ibu Kandung</label>
+                                <input v-model="formMember.namaIbu" type="text" placeholder="Atau ketik manual jika tidak ada" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-gray-100 pt-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Pernikahan</label>
+                                <select v-model="formMember.statusPernikahan" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option>Belum Menikah</option>
+                                    <option>Menikah</option>
+                                    <option>Cerai Hidup</option>
+                                    <option>Cerai Mati</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Pasangan</label>
+                                <input v-model="formMember.namaPasangan" type="text" placeholder="Tulis nama suami/istri" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 4: KONTAK PRIBADI & FOTO -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="fas fa-phone-alt"></i> KONTAK PRIBADI & FOTO
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor HP / WhatsApp</label>
+                                <div class="relative">
+                                    <i class="fab fa-whatsapp absolute left-3 top-3 text-green-500"></i>
+                                    <input v-model="formMember.noHp" type="text" placeholder="08123456789" class="w-full border border-gray-300 rounded-md p-2.5 pl-9 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Tampil)</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0">
+                                        <img v-if="formMember.foto" :src="formMember.foto" class="w-full h-full object-cover">
+                                        <i v-else class="fas fa-image text-gray-400 mt-2.5 ml-3"></i>
+                                    </div>
+                                    <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1.5 text-sm file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Alamat Terakhir / Domisili</label>
+                            <textarea v-model="formMember.alamat" rows="2" placeholder="Tulis alamat lengkap..." class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-y"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Footer / Submit Button -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <button type="submit" class="w-full py-3.5 bg-[#12b981] hover:bg-[#059669] text-white font-bold rounded-lg transition shadow flex justify-center items-center gap-2">
+                            <i class="fas fa-cloud-upload-alt"></i> Simpan Data Anggota
                         </button>
+                        <p class="text-center text-[11px] text-gray-400 mt-2">Data disimpan ke preview sementara browser Anda.</p>
                     </div>
                 </form>
             </div>
@@ -534,11 +646,7 @@
         let statusChartInstance = null;
 
         const defaultData = [
-            { id: "1", foto: "", namaLengkap: "Sastro Diktomo", panggilan: "Tomo", jk: "L", tempatLahir: "Surabaya", tglLahir: "1958-06-18", statusKehidupan: "Wafat", tglWafat: "2007-03-15", makam: "Makam Pahlawan", namaAyah: "-", namaIbu: "-", statusPernikahan: "Menikah", namaPasangan: "Siti Aminah", alamat: "-", noHp: "-", statusRelasi: "Garis Keturunan", parentId: "" }
-        ];
-
-        const defaultAcara = [
-            { id: 1, judul: "Kumpul Keluarga Idul Fitri 2023", tanggal: "2023-04-22", jenis: "Foto (Folder)", gdriveLink: "https://drive.google.com" }
+            { id: "1", foto: "", namaLengkap: "Sastro Diktomo", panggilan: "Tomo", jk: "L", tempatLahir: "Surabaya", tglLahir: "1958-06-18", statusKehidupan: "Wafat", tglWafat: "2007-03-15", makam: "Makam Pahlawan", namaAyah: "-", namaIbu: "-", statusPernikahan: "Menikah", namaPasangan: "Siti Aminah", alamat: "-", noHp: "-", statusRelasi: "Leluhur Utama", parentId: "" }
         ];
 
         const app = createApp({
@@ -547,9 +655,9 @@
                     activeTab: 'home',
                     searchQuery: '',
                     homeSearchQuery: '',
-                    mainPhoto: 'Mbah Dirin New.jpg',
+                    mainPhoto: 'Mbah%20Dirin%20New.jpg',
                     familyData: [...defaultData],
-                    acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || defaultAcara,
+                    acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || [],
                     
                     quoteText: localStorage.getItem('silsilah_quote') || "Keluarga adalah harta yang paling berharga dan tak ternilai harganya.",
                     isEditingQuote: false,
@@ -557,19 +665,22 @@
                     selectedMember: null,
                     isSettingsOpen: false,
                     isAcaraFormOpen: false,
-                    isAddFormOpen: false,
-                    isRefreshing: false,
+                    
+                    // Mode Form Modern
+                    isFormOpen: false,
+                    formMode: 'add', // 'add' atau 'edit'
                     
                     sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     tempSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     sheetStatus: '',
+                    isRefreshing: false,
 
                     formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' },
                     formMember: {
-                        foto: '', namaLengkap: '', panggilan: '', jk: 'L', tempatLahir: '', tglLahir: '',
+                        id: '', foto: '', namaLengkap: '', panggilan: '', jk: '', tempatLahir: '', tglLahir: '',
                         statusKehidupan: 'Hidup', tglWafat: '', makam: '', namaAyah: '', namaIbu: '',
-                        statusPernikahan: 'Belum Menikah', namaPasangan: '-', alamat: '', noHp: '-',
-                        statusRelasi: 'Anak', parentId: ''
+                        statusPernikahan: 'Belum Menikah', namaPasangan: '', alamat: '', noHp: '',
+                        statusRelasi: '', parentId: ''
                     }
                 }
             },
@@ -701,12 +812,6 @@
                     this.activeTab = 'data';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
-                handleEditOrDelete(action) {
-                    const actionName = action === 'edit' ? 'Mengubah' : 'Menghapus';
-                    if (confirm(`${actionName} data secara permanen harus dilakukan langsung melalui Google Spreadsheet (karena web ini mengambil data secara otomatis dari sana).\n\nApakah Anda ingin membuka Google Spreadsheet sekarang?`)) {
-                        window.open("https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/edit?usp=sharing", "_blank");
-                    }
-                },
                 toggleQuoteEdit() {
                     if (this.isEditingQuote) {
                         localStorage.setItem('silsilah_quote', this.quoteText);
@@ -806,45 +911,54 @@
                     });
                     return html;
                 },
+                // MANAJEMEN FORM & DATA (UI Modern)
+                openForm(mode, member = null) {
+                    this.formMode = mode;
+                    if (mode === 'edit' && member) {
+                        this.formMember = { ...member }; // Copy data anggota terpilih
+                    } else {
+                        // Reset Form untuk Tambah Baru
+                        this.formMember = {
+                            id: '', foto: '', namaLengkap: '', panggilan: '', jk: '', tempatLahir: '', tglLahir: '',
+                            statusKehidupan: 'Hidup', tglWafat: '', makam: '', namaAyah: '', namaIbu: '',
+                            statusPernikahan: 'Belum Menikah', namaPasangan: '', alamat: '', noHp: '',
+                            statusRelasi: '', parentId: ''
+                        };
+                    }
+                    this.isFormOpen = true;
+                },
                 handleFotoUpload(event) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            this.formMember.foto = e.target.result;
+                            this.formMember.foto = e.target.result; // Ubah ke format Base64 yang bisa langsung tampil
                         };
                         reader.readAsDataURL(file);
                     }
                 },
-                saveAcara() {
-                    const newAcara = { ...this.formAcara, id: Date.now() };
-                    this.acaraData.push(newAcara);
-                    localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
-                    this.isAcaraFormOpen = false;
-                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' };
+                saveMember() {
+                    if (this.formMode === 'add') {
+                        // Buat ID baru
+                        this.formMember.id = "TMP_" + Date.now();
+                        this.familyData.push({ ...this.formMember });
+                        alert("Data Baru berhasil ditambahkan ke Preview Layar Anda!");
+                    } else {
+                        // Update data yang ada
+                        const index = this.familyData.findIndex(item => item.id === this.formMember.id);
+                        if (index !== -1) {
+                            this.familyData[index] = { ...this.formMember };
+                            alert("Data Anggota berhasil diubah di Preview Layar Anda!");
+                        }
+                    }
+                    this.isFormOpen = false;
                 },
-                deleteAcara(id) {
-                    if(confirm("Hapus acara ini?")) {
-                        this.acaraData = this.acaraData.filter(a => a.id !== id);
-                        localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
+                deleteMember(id) {
+                    if(confirm("Hapus anggota ini dari tampilan layar? (Untuk permanen, hapus barisnya di Spreadsheet)")) {
+                        this.familyData = this.familyData.filter(m => m.id !== id);
                     }
                 },
-                saveNewMember() {
-                    const newId = "TMP_" + Date.now();
-                    const newData = { ...this.formMember, id: newId };
-                    
-                    this.familyData.push(newData);
-                    
-                    this.formMember = {
-                        foto: '', namaLengkap: '', panggilan: '', jk: 'L', tempatLahir: '', tglLahir: '',
-                        statusKehidupan: 'Hidup', tglWafat: '', makam: '', namaAyah: '', namaIbu: '',
-                        statusPernikahan: 'Belum Menikah', namaPasangan: '-', alamat: '', noHp: '-',
-                        statusRelasi: 'Anak', parentId: ''
-                    };
-                    this.isAddFormOpen = false;
-                    
-                    alert("Berhasil ditambahkan ke tampilan Preview! Ingat, data dan foto ini belum tersimpan secara permanen. Tambahkan manual ke Google Spreadsheet untuk menyimpannya ke server.");
-                },
+                // MANAJEMEN SPREADSHEET
                 refreshData() {
                     this.loadFromSheet();
                 },
@@ -880,8 +994,7 @@
                         error: (err) => {
                             this.isRefreshing = false;
                             console.error(err);
-                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan disetel ke 'Publik'. Kembali ke data bawaan.";
-                            this.familyData = [...defaultData];
+                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV.";
                         }
                     });
                 }
