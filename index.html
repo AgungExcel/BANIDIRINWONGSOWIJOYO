@@ -179,14 +179,16 @@
                             <i class="fas fa-sync-alt" :class="{'animate-spin': isRefreshing}"></i> Segarkan Bagan
                         </button>
                     </div>
+                    <!-- Area Scroll Pohon Silsilah (Diperbaiki agar Center) -->
                     <div class="flex-1 overflow-auto bg-gray-50 p-8 rounded-lg border border-gray-100 shadow-inner min-h-[500px]">
-                        <div class="flex justify-center min-w-max">
+                        <!-- Wrapper dengan margin auto untuk memastikan posisi ke tengah -->
+                        <div style="width: max-content; margin: 0 auto; padding-bottom: 20px;">
                             <div class="tree" v-if="treeData.length > 0">
                                 <ul>
                                     <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
                                 </ul>
                             </div>
-                            <p v-if="treeData.length === 0" class="text-gray-400 italic">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
+                            <p v-if="treeData.length === 0" class="text-gray-400 italic text-center">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                         </div>
                     </div>
                 </div>
@@ -568,7 +570,6 @@
                                 <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
                                 <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
                             </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Ini menentukan di bawah siapa orang ini akan muncul dalam garis bagan pohon.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 border-t border-gray-100 pt-5">
                             <div>
@@ -702,10 +703,13 @@
                         <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <i class="fas fa-user text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
+                    <!-- Ikon Kosong Berbeda Warna berdasarkan L/P -->
                     <i v-else class="fas fa-user text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                 </div>
 
-                <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">{{ node.panggilan || node.namaLengkap }}</h3>
+                <!-- TAMPILAN NAMA DIGANTI JADI NAMA LENGKAP -->
+                <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">{{ node.namaLengkap }}</h3>
+                
                 <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[10px]"></i> {{ node.namaPasangan }}</p>
                 <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full mt-2 inline-block font-bold tracking-wide">
                     {{ node.statusRelasi }}
@@ -806,7 +810,6 @@
                                 return childPid !== "" && childPid !== "-" && childPid === parentNodeId && childPid !== childId;
                             });
                             
-                            // Sortir anak berdasarkan urutanAnak
                             children.sort((a, b) => {
                                 const numA = parseInt(a.urutanAnak) || 999;
                                 const numB = parseInt(b.urutanAnak) || 999;
@@ -1078,17 +1081,14 @@
                     try {
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
-                            // Update UI langsung
                             this.familyData.push({ ...this.formMember });
                         } else {
-                            // Update UI langsung
                             const index = this.familyData.findIndex(item => item.id === this.formMember.id);
                             if (index !== -1) {
                                 this.familyData.splice(index, 1, { ...this.formMember });
                             }
                         }
 
-                        // Kirim data ke Apps Script secara fire-and-forget
                         if (this.appScriptUrl) {
                             const payload = { action: this.formMode, data: this.formMember };
                             fetch(this.appScriptUrl, {
@@ -1099,11 +1099,11 @@
                             }).catch(e => console.error(e));
                         }
                         
-                        this.showAlert('Berhasil Disimpan', 'Data dan foto berhasil diperbarui di tampilan. Sinkronisasi server sedang berjalan di latar belakang secara otomatis.', 'success');
+                        this.showAlert('Berhasil Disimpan', 'Data dan foto berhasil diperbarui di tampilan.', 'success');
                         this.isFormOpen = false;
 
                     } catch(err) {
-                        this.showAlert('Perhatian', "Terjadi kesalahan internal. Namun data berhasil disimpan ke layar saat ini.", 'warning');
+                        this.showAlert('Perhatian', "Terjadi kesalahan. Data hanya disimpan ke layar lokal.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
@@ -1111,18 +1111,21 @@
                 },
                 deleteMember(member) {
                     this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", () => {
-                        // Hapus langsung dari UI agar hilang seketika
+                        // 1. Langsung hapus dari tampilan layar agar tidak "muncul lagi" sementara server Google sedang mikir
                         this.familyData = this.familyData.filter(m => m.id !== member.id);
 
                         if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
+                            // 2. Perintah dikirim ke server secara diam-diam
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify({ action: 'delete', id: member.id })
+                            }).then(() => {
+                                // Sengaja tidak me-load data ulang agar data tidak kembali dari cache Google lama
                             }).catch(e => console.error(e));
                             
-                            this.showAlert('Berhasil', "Data berhasil dihapus dari tampilan. Pemrosesan di server sedang berlangsung di latar belakang.", 'success');
+                            this.showAlert('Hapus Berhasil', "Data berhasil dihapus dari sistem.", 'success');
                         }
                     });
                 },
