@@ -538,6 +538,13 @@
                     </div>
                     <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl transition">&times;</button>
                 </div>
+
+                <div class="px-8 pt-4 pb-2" v-if="!appScriptUrl">
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-[13px] px-4 py-2.5 rounded-lg flex items-start gap-2">
+                        <i class="fas fa-exclamation-triangle mt-0.5 text-amber-500"></i>
+                        <p><strong>URL Apps Script Belum Diatur:</strong> Anda hanya dapat menyimpan data ke <strong>Preview Lokal (Sementara)</strong> di perangkat ini. Isi URL Apps Script di menu Pengaturan agar form ini bisa mengirim data langsung ke Google Sheet.</p>
+                    </div>
+                </div>
                 
                 <form @submit.prevent="saveMember" class="p-8 pt-4 space-y-6">
                     <!-- KARTU 1: INFORMASI DASAR -->
@@ -665,7 +672,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative">
                                         <img v-if="formMember.foto" :src="formMember.foto" class="w-full h-full object-cover">
@@ -688,6 +695,46 @@
                             <i v-else class="fas fa-cloud-upload-alt"></i> 
                             {{ isSaving ? 'Menyimpan Data...' : 'Simpan Data Anggota' }}
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: TAMBAH ACARA -->
+        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
+                    <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                
+                <form @submit.prevent="saveAcara" class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
+                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
+                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
+                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <option>Foto (Folder)</option>
+                                <option>Video</option>
+                                <option>Dokumen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Google Drive *</label>
+                        <input required v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md">Simpan Acara</button>
                     </div>
                 </form>
             </div>
@@ -1160,7 +1207,6 @@
                     this.isRefreshing = true;
                     this.sheetStatus = "Mengambil data...";
                     
-                    // Menambahkan bypass cache agar data CSV terbarui seketika
                     const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
                     
                     Papa.parse(fetchUrl, {
@@ -1169,7 +1215,36 @@
                         complete: (results) => {
                             this.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
-                                const validData = results.data.filter(row => row && typeof row === 'object' && (row.id || row.namaLengkap));
+                                // NORMALISASI DATA (MENGATASI PERBEDAAN HURUF BESAR/KECIL HEADER DI SPREADSHEET)
+                                const normalizedData = results.data.map(row => {
+                                    const normRow = {};
+                                    for (const key in row) {
+                                        if (key) {
+                                            const lowerKey = key.trim().toLowerCase();
+                                            if (lowerKey === 'id') normRow.id = row[key];
+                                            else if (lowerKey === 'namalengkap') normRow.namaLengkap = row[key];
+                                            else if (lowerKey === 'panggilan') normRow.panggilan = row[key];
+                                            else if (lowerKey === 'jk') normRow.jk = row[key];
+                                            else if (lowerKey === 'tempatlahir') normRow.tempatLahir = row[key];
+                                            else if (lowerKey === 'tgllahir') normRow.tglLahir = row[key];
+                                            else if (lowerKey === 'statuskehidupan') normRow.statusKehidupan = row[key];
+                                            else if (lowerKey === 'tglwafat') normRow.tglWafat = row[key];
+                                            else if (lowerKey === 'makam') normRow.makam = row[key];
+                                            else if (lowerKey === 'namaayah') normRow.namaAyah = row[key];
+                                            else if (lowerKey === 'namaibu') normRow.namaIbu = row[key];
+                                            else if (lowerKey === 'statuspernikahan') normRow.statusPernikahan = row[key];
+                                            else if (lowerKey === 'namapasangan') normRow.namaPasangan = row[key];
+                                            else if (lowerKey === 'alamat') normRow.alamat = row[key];
+                                            else if (lowerKey === 'nohp') normRow.noHp = row[key];
+                                            else if (lowerKey === 'statusrelasi') normRow.statusRelasi = row[key];
+                                            else if (lowerKey === 'parentid') normRow.parentId = row[key];
+                                            else if (lowerKey === 'foto') normRow.foto = row[key];
+                                        }
+                                    }
+                                    return normRow;
+                                });
+
+                                const validData = normalizedData.filter(row => row && typeof row === 'object' && (row.id || row.namaLengkap));
                                 
                                 if(validData.length > 0){
                                     this.familyData = validData;
