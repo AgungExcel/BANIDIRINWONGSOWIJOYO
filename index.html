@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- PapaParse untuk konversi Google Sheet CSV ke JSON -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @media print {
+            body { background-color: white; }
+            .print-hidden { display: none !important; }
+            .print-block { display: block !important; }
+            .page-break { page-break-before: always; }
+            .avoid-break { page-break-inside: avoid; }
+        }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #059669; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+    <div id="app" v-cloak>
+        <!-- HEADER -->
+        <header class="bg-emerald-800 text-white shadow-lg print-hidden sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <div class="bg-white p-2 rounded-full text-emerald-800">
+                        <i class="fas fa-network-wired text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold leading-tight">SILSILAH DIGITAL</h1>
+                        <p class="text-emerald-200 text-xs tracking-wider">Keturunan BANI DIRIN WONGSO WIJOYO</p>
+                    </div>
+                </div>
+                
+                <nav class="flex flex-wrap justify-center gap-1 bg-emerald-900/50 p-1 rounded-lg">
+                    <button @click="activeTab = 'home'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'home', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'home'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                        <i class="fas fa-home"></i> <span class="hidden sm:inline">Beranda</span>
+                    </button>
+                    <button @click="activeTab = 'tree'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'tree', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'tree'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                        <i class="fas fa-sitemap"></i> <span class="hidden sm:inline">Pohon</span>
+                    </button>
+                    <button @click="activeTab = 'data'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'data', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'data'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                        <i class="fas fa-users"></i> <span class="hidden sm:inline">Data</span>
+                    </button>
+                    <button @click="activeTab = 'acara'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'acara', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'acara'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                        <i class="fas fa-calendar-alt"></i> <span class="hidden sm:inline">Acara</span>
+                    </button>
+                    <button @click="activeTab = 'book'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'book', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'book'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                        <i class="fas fa-book-open"></i> <span class="hidden sm:inline">Buku</span>
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="container mx-auto px-4 py-6">
+            
+            <!-- 1. BERANDA -->
+            <transition name="fade" mode="out-in">
+                <div v-if="activeTab === 'home'" class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-emerald-100">
+                        <div class="h-48 bg-gradient-to-r from-emerald-800 to-emerald-600 relative"></div>
+                        <div class="px-8 pb-10 relative">
+                            <div class="flex flex-col items-center -mt-24 mb-6 relative">
+                                <div class="w-48 h-48 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white flex items-center justify-center">
+                                    <img :src="mainPhoto" alt="Ikon Beranda" class="w-full h-full object-cover filter contrast-110 brightness-105" onerror="this.src='https://via.placeholder.com/200?text=Foto'"/>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="text-4xl font-extrabold text-gray-800 mb-2">SILSILAH KELUARGA</h2>
+                                <h3 class="text-2xl font-bold text-emerald-700 mb-6">BANI DIRIN WONGSO WIJOYO</h3>
+                                <p class="text-gray-600 leading-relaxed max-w-2xl mx-auto mb-8 text-lg">
+                                    Aplikasi ini didedikasikan untuk mencatat, menyimpan, dan merawat jejak sejarah serta silsilah keturunan dari <span class="font-semibold text-emerald-800">Mbah Dirin Wongso Wijoyo</span>. 
+                                    Data terintegrasi langsung. Semoga silaturahmi senantiasa terjaga.
+                                </p>
+                                <div class="flex flex-wrap justify-center gap-4">
+                                    <button @click="activeTab = 'tree'" class="bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 shadow-md transition">
+                                        <i class="fas fa-sitemap mr-2"></i> Lihat Pohon Silsilah
+                                    </button>
+                                    <button @click="activeTab = 'data'" class="bg-white text-emerald-700 border border-emerald-200 px-6 py-3 rounded-lg font-medium hover:bg-emerald-50 shadow-sm transition">
+                                        <i class="fas fa-search mr-2"></i> Cari Anggota Keluarga
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. POHON SILSILAH -->
+                <div v-else-if="activeTab === 'tree'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh] flex flex-col">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-emerald-800">Pohon Silsilah</h2>
+                        <p class="text-gray-500">Struktur keturunan secara hierarki.</p>
+                    </div>
+                    <div class="flex-1 overflow-auto bg-gray-50 p-8 rounded-lg border border-gray-100 shadow-inner">
+                        <div class="flex justify-center min-w-max">
+                            <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
+                            <p v-if="treeData.length === 0" class="text-gray-400 italic">Belum ada data keluarga.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. DATA KELUARGA -->
+                <div v-else-if="activeTab === 'data'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh]">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-emerald-800">Daftar Anggota Keluarga</h2>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition" title="Pengaturan Spreadsheet">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Data -->
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-[#d1e7dd] text-gray-800 border-b">
+                                    <th class="p-3 font-semibold text-center w-12">No</th>
+                                    <th class="p-3 font-semibold">Nama Lengkap</th>
+                                    <th class="p-3 font-semibold">Panggilan</th>
+                                    <th class="p-3 font-semibold text-center">L/P</th>
+                                    <th class="p-3 font-semibold text-center">Usia</th>
+                                    <th class="p-3 font-semibold">Status</th>
+                                    <th class="p-3 font-semibold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in filteredData" :key="item.id" class="border-b hover:bg-gray-50 transition-colors">
+                                    <td class="p-3 text-center text-gray-500">{{ index + 1 }}</td>
+                                    <td class="p-3 font-medium text-gray-800">{{ item.namaLengkap }}</td>
+                                    <td class="p-3 text-gray-600">{{ item.panggilan || '-' }}</td>
+                                    <td class="p-3 text-center">{{ item.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
+                                    <td class="p-3 text-center">{{ calculateAge(item.tglLahir, item.tglWafat) }}</td>
+                                    <td class="p-3 text-gray-600">{{ item.statusRelasi }}</td>
+                                    <td class="p-3 text-center">
+                                        <button @click="openDetailModal(item)" class="bg-[#00d0f1] hover:bg-[#00b8d4] text-white px-4 py-1.5 rounded-full text-xs font-semibold transition-colors shadow-sm">
+                                            Detail Profil
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr v-if="filteredData.length === 0">
+                                    <td colspan="7" class="p-8 text-center text-gray-500">
+                                        <i class="fas fa-folder-open text-3xl mb-3 text-gray-300"></i><br>
+                                        Tidak ada data yang ditemukan. Pastikan link Spreadsheet terisi dengan benar.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. ACARA / GALERI -->
+                <div v-else-if="activeTab === 'acara'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh]">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-emerald-800">Acara & Dokumentasi</h2>
+                            <p class="text-gray-500">Galeri foto dan video acara keluarga (Terhubung ke Google Drive)</p>
+                        </div>
+                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 text-sm flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Tambah Acara
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="acara in acaraData" :key="acara.id" class="border rounded-xl p-4 shadow-sm hover:shadow-md transition bg-gray-50 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg text-gray-800">{{ acara.judul }}</h3>
+                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
+                                </div>
+                                <p class="text-gray-500 text-sm mb-4"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                                <a :href="acara.gdriveLink" target="_blank" class="text-emerald-600 hover:text-emerald-800 text-sm font-semibold flex items-center gap-1">
+                                    <i class="fab fa-google-drive"></i> Buka di GDrive
+                                </a>
+                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
+                            Belum ada dokumentasi acara yang ditambahkan.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. BUKU SILSILAH -->
+                <div v-else-if="activeTab === 'book'" class="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[70vh] flex flex-col relative print:shadow-none print:border-none print:bg-white">
+                    <div class="p-6 border-b print-hidden flex justify-between items-center bg-gray-50 rounded-t-xl">
+                        <div>
+                            <h2 class="text-2xl font-bold text-emerald-800">Buku Silsilah</h2>
+                        </div>
+                        <button onclick="window.print()" class="bg-emerald-700 text-white px-5 py-2 rounded-lg hover:bg-emerald-800 transition shadow-md flex items-center gap-2">
+                            <i class="fas fa-print"></i> Cetak / PDF
+                        </button>
+                    </div>
+                    <div class="p-8 md:p-12 print:p-0 bg-white text-sm leading-relaxed" id="printable-book">
+                        <div class="text-center mb-12 pb-6 border-b-2 border-emerald-800 pt-4">
+                            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 print:text-black">BUKU SILSILAH KELUARGA</h1>
+                            <h2 class="text-xl font-bold text-emerald-800 mb-4 print:text-black">BANI DIRIN WONGSO WIJOYO</h2>
+                            <p class="mt-4 text-xs text-gray-500">Dicetak pada: {{ new Date().toLocaleDateString('id-ID') }}</p>
+                        </div>
+                        <div class="max-w-4xl mx-auto space-y-4">
+                            <!-- Rekursif Buku dirender via method untuk memudahkan struktur murni HTML -->
+                            <div v-html="generateBookHTML(treeData)"></div>
+                            <div v-if="treeData.length === 0" class="text-center text-gray-400 py-10">Data kosong.</div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+        </main>
+
+        <!-- MODAL: DETAIL PROFIL (Seperti Screenshot) -->
+        <div v-if="selectedMember" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="selectedMember = null">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+                <!-- Modal Header -->
+                <div class="bg-[#1e7e53] text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-xl font-semibold">Detail Profil</h3>
+                    <button @click="selectedMember = null" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto">
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Left Side: Photo & Status -->
+                        <div class="w-full md:w-1/4 flex flex-col items-center text-center">
+                            <div class="w-24 h-24 rounded-full border-2 border-[#1e7e53] overflow-hidden mb-3 bg-gray-100 flex items-center justify-center">
+                                <i v-if="selectedMember.jk === 'L'" class="fas fa-user text-4xl text-[#1e7e53]"></i>
+                                <i v-else class="fas fa-user-tie text-4xl text-[#1e7e53]"></i>
+                            </div>
+                            <h4 class="text-2xl font-bold text-[#1e7e53] mb-2">{{ selectedMember.panggilan || selectedMember.namaLengkap.split(' ')[0] }}</h4>
+                            <span class="bg-gray-500 text-white text-xs px-4 py-1.5 rounded-full font-medium tracking-wide">
+                                {{ selectedMember.statusRelasi }}
+                            </span>
+                        </div>
+
+                        <!-- Right Side: Details -->
+                        <div class="w-full md:w-3/4 text-sm">
+                            <table class="w-full">
+                                <tbody>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Lengkap</td><td class="w-2/3">: {{ selectedMember.namaLengkap }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Jenis Kelamin</td><td class="w-2/3">: {{ selectedMember.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Tempat, Tgl Lahir</td><td class="w-2/3">: {{ selectedMember.tempatLahir }}, {{ formatDateID(selectedMember.tglLahir) }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Usia</td><td class="w-2/3">: {{ calculateAge(selectedMember.tglLahir, selectedMember.tglWafat) }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Kehidupan</td><td class="w-2/3">: {{ selectedMember.statusKehidupan }}</td></tr>
+                                    <tr class="mb-3 flex" v-if="selectedMember.statusKehidupan === 'Wafat'">
+                                        <td class="w-1/3 font-semibold text-gray-700">Wafat & Makam</td>
+                                        <td class="w-2/3 text-red-600 font-medium">: {{ formatDateID(selectedMember.tglWafat) }} (Makam: {{ selectedMember.makam || '-' }})</td>
+                                    </tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ayah</td><td class="w-2/3">: {{ selectedMember.namaAyah || '-' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ibu</td><td class="w-2/3">: {{ selectedMember.namaIbu || '-' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Pernikahan</td><td class="w-2/3">: {{ selectedMember.statusPernikahan || '-' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Pasangan</td><td class="w-2/3 font-bold">: {{ selectedMember.namaPasangan || '-' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Alamat</td><td class="w-2/3">: {{ selectedMember.alamat || '-' }}</td></tr>
+                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">No. HP</td><td class="w-2/3">: {{ selectedMember.noHp || '-' }}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Section -->
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h4 class="text-center font-bold text-[#1e7e53] mb-4">Statistik Keturunan & Relasi Ke Bawah</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-sm">
+                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                                <div class="font-bold text-gray-700 mb-1">Pasangan</div>
+                                <div class="text-[#0d6efd] font-bold inline">{{ memberStats.pasangan.L }}</div> L | 
+                                <div class="text-[#dc3545] font-bold inline">{{ memberStats.pasangan.P }}</div> P
+                            </div>
+                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                                <div class="font-bold text-gray-700 mb-1">Anak</div>
+                                <div class="text-[#0d6efd] font-bold inline">{{ memberStats.anak.L }}</div> L | 
+                                <div class="text-[#dc3545] font-bold inline">{{ memberStats.anak.P }}</div> P
+                            </div>
+                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                                <div class="font-bold text-gray-700 mb-1">Menantu</div>
+                                <div class="text-[#0d6efd] font-bold inline">{{ memberStats.menantu.L }}</div> L | 
+                                <div class="text-[#dc3545] font-bold inline">{{ memberStats.menantu.P }}</div> P
+                            </div>
+                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                                <div class="font-bold text-gray-700 mb-1">Cucu</div>
+                                <div class="text-[#0d6efd] font-bold inline">{{ memberStats.cucu.L }}</div> L | 
+                                <div class="text-[#dc3545] font-bold inline">{{ memberStats.cucu.P }}</div> P
+                            </div>
+                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                                <div class="font-bold text-gray-700 mb-1">Cicit</div>
+                                <div class="text-[#0d6efd] font-bold inline">{{ memberStats.cicit.L }}</div> L | 
+                                <div class="text-[#dc3545] font-bold inline">{{ memberStats.cicit.P }}</div> P
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t bg-gray-50">
+                    <button @click="selectedMember = null" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: SETTINGS SPREADSHEET -->
+        <div v-if="isSettingsOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isSettingsOpen = false">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-link text-emerald-600 mr-2"></i>Sumber Data Spreadsheet</h3>
+                <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                    Untuk mengubah data kapan saja, buat file Google Sheets, isi dengan struktur kolom yang sesuai, lalu klik <b>File > Share > Publish to web</b>. Pilih format <b>CSV</b> dan tempel linknya di bawah ini.
+                </p>
+                <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX.../pub?output=csv" class="w-full border p-3 rounded-md mb-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                <div class="flex justify-end gap-2">
+                    <button @click="isSettingsOpen = false" class="px-4 py-2 bg-gray-200 rounded-md text-sm">Batal</button>
+                    <button @click="saveSheetUrl" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700">Simpan & Muat Data</button>
+                </div>
+                <div v-if="sheetStatus" class="mt-4 p-2 bg-blue-50 text-blue-700 text-xs rounded border border-blue-200">
+                    {{ sheetStatus }}
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: TAMBAH ACARA -->
+        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                <h3 class="text-lg font-bold mb-4">Tambah Link Acara</h3>
+                <form @submit.prevent="saveAcara" class="space-y-4">
+                    <div><label class="block text-sm mb-1">Judul Acara</label><input required v-model="formAcara.judul" type="text" class="w-full border rounded p-2 text-sm"></div>
+                    <div><label class="block text-sm mb-1">Tanggal</label><input required v-model="formAcara.tanggal" type="date" class="w-full border rounded p-2 text-sm"></div>
+                    <div>
+                        <label class="block text-sm mb-1">Jenis Media</label>
+                        <select v-model="formAcara.jenis" class="w-full border rounded p-2 text-sm">
+                            <option>Foto (Folder)</option>
+                            <option>Video</option>
+                            <option>Dokumen</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-sm mb-1">Link Google Drive</label><input required v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border rounded p-2 text-sm"></div>
+                    <div class="flex justify-end gap-2 mt-4 pt-2 border-t">
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-4 py-2 bg-gray-200 rounded text-sm">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded text-sm">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah) -->
+    <script type="text/x-template" id="org-node-template">
+        <div class="flex flex-col items-center relative">
+            <!-- Kartu Anggota -->
+            <div class="z-10 bg-white border-2 border-emerald-600 rounded-lg shadow-sm p-3 m-2 min-w-[150px] max-w-[200px] text-center relative group cursor-pointer hover:shadow-md transition" @click="$emit('show-detail', node)">
+                <div class="w-full h-1.5 absolute top-0 left-0 rounded-t-sm" :class="node.jk === 'L' ? 'bg-[#0d6efd]' : 'bg-[#dc3545]'"></div>
+                <h3 class="font-bold text-gray-800 text-sm mt-1 leading-tight">{{ node.panggilan || node.namaLengkap }}</h3>
+                <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[10px]"></i> {{ node.namaPasangan }}</p>
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full mt-2 inline-block font-medium">
+                    {{ node.statusRelasi }}
+                </span>
+            </div>
+
+            <!-- Garis Penghubung Anak -->
+            <template v-if="node.children && node.children.length > 0">
+                <div class="w-0.5 h-6 bg-emerald-600"></div>
+                <div class="flex relative">
+                    <div v-if="node.children.length > 1" class="absolute top-0 h-0.5 bg-emerald-600" style="width: calc(100% - 50%); left: 25%;"></div>
+                    
+                    <div v-for="(child, index) in node.children" :key="child.id" class="flex flex-col items-center relative px-2">
+                        <div v-if="node.children.length > 1" class="absolute top-0 h-0.5 bg-emerald-600" 
+                             :class="{'right-0 w-1/2': index === 0, 'left-0 w-1/2': index === node.children.length - 1, 'w-full left-0': index > 0 && index < node.children.length - 1}">
+                        </div>
+                        <div class="w-0.5 h-6 bg-emerald-600"></div>
+                        <!-- Pemanggilan Rekursif -->
+                        <org-node :node="child" @show-detail="$emit('show-detail', $event)"></org-node>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </script>
+
+    <script>
+        const { createApp } = Vue;
+
+        // --- Data Default (Mock) ---
+        const defaultData = [
+            { id: "1", namaLengkap: "Sastro Diktomo", panggilan: "Tomo", jk: "L", tempatLahir: "Surabaya", tglLahir: "1958-06-18", statusKehidupan: "Wafat", tglWafat: "2007-03-15", makam: "Makam Pahlawan", namaAyah: "-", namaIbu: "-", statusPernikahan: "Menikah", namaPasangan: "Siti Aminah", alamat: "-", noHp: "-", statusRelasi: "Garis Keturunan", parentId: "" },
+            { id: "2", namaLengkap: "Budiono", panggilan: "Budi", jk: "L", tempatLahir: "Surabaya", tglLahir: "1980-01-01", statusKehidupan: "Hidup", tglWafat: "", makam: "", namaAyah: "Sastro Diktomo", namaIbu: "Siti Aminah", statusPernikahan: "Menikah", namaPasangan: "Nur Laily", alamat: "Jakarta", noHp: "0812...", statusRelasi: "Anak", parentId: "1" },
+            { id: "3", namaLengkap: "Juminten", panggilan: "Juminten", jk: "P", tempatLahir: "Surabaya", tglLahir: "1985-05-12", statusKehidupan: "Hidup", tglWafat: "", makam: "", namaAyah: "Sastro Diktomo", namaIbu: "Siti Aminah", statusPernikahan: "Menikah", namaPasangan: "Hari Sudrajat", alamat: "Surabaya", noHp: "0813...", statusRelasi: "Anak", parentId: "1" },
+            { id: "4", namaLengkap: "Fajar Budianto", panggilan: "Fajar", jk: "L", tempatLahir: "Jakarta", tglLahir: "2005-10-10", statusKehidupan: "Hidup", tglWafat: "", makam: "", namaAyah: "Budiono", namaIbu: "Nur Laily", statusPernikahan: "Belum Menikah", namaPasangan: "-", alamat: "Jakarta", noHp: "-", statusRelasi: "Cucu", parentId: "2" },
+            { id: "5", namaLengkap: "Andin Priyana Fajar", panggilan: "Andin", jk: "P", tempatLahir: "Surabaya", tglLahir: "2010-02-20", statusKehidupan: "Hidup", tglWafat: "", makam: "", namaAyah: "Hari Sudrajat", namaIbu: "Juminten", statusPernikahan: "Belum Menikah", namaPasangan: "-", alamat: "-", noHp: "-", statusRelasi: "Cucu", parentId: "3" }
+        ];
+
+        const defaultAcara = [
+            { id: 1, judul: "Kumpul Keluarga Idul Fitri 2023", tanggal: "2023-04-22", jenis: "Foto (Folder)", gdriveLink: "https://drive.google.com" }
+        ];
+
+        const app = createApp({
+            data() {
+                return {
+                    activeTab: 'home',
+                    searchQuery: '',
+                    mainPhoto: 'https://via.placeholder.com/300x300.png?text=Bani+Dirin', // Fallback Icon
+                    familyData: [...defaultData],
+                    acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || defaultAcara,
+                    
+                    // Modals State
+                    selectedMember: null,
+                    isSettingsOpen: false,
+                    isAcaraFormOpen: false,
+                    
+                    // Spreadsheet Integration
+                    sheetUrl: localStorage.getItem('silsilah_sheet_url') || '',
+                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url') || '',
+                    sheetStatus: '',
+
+                    formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' }
+                }
+            },
+            computed: {
+                filteredData() {
+                    if (!this.searchQuery) return this.familyData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.familyData.filter(d => 
+                        d.namaLengkap.toLowerCase().includes(q) || 
+                        (d.panggilan && d.panggilan.toLowerCase().includes(q))
+                    );
+                },
+                treeData() {
+                    const buildTree = (data, parentId = "") => {
+                        return data
+                            .filter(item => String(item.parentId) === String(parentId))
+                            .map(item => ({
+                                ...item,
+                                children: buildTree(data, item.id)
+                            }));
+                    };
+                    // Ambil node utama (yang tidak punya parentId atau parentId kosong/sesuai format)
+                    return buildTree(this.familyData, "");
+                },
+                memberStats() {
+                    if (!this.selectedMember) return null;
+                    const id = String(this.selectedMember.id);
+                    const stats = {
+                        pasangan: { L: 0, P: 0 },
+                        anak: { L: 0, P: 0 }, menantu: { L: 0, P: 0 },
+                        cucu: { L: 0, P: 0 }, cicit: { L: 0, P: 0 }
+                    };
+
+                    // Hitung Pasangan (Jika ada namaPasangan)
+                    if (this.selectedMember.namaPasangan && this.selectedMember.namaPasangan !== '-') {
+                        this.selectedMember.jk === 'L' ? stats.pasangan.P = 1 : stats.pasangan.L = 1;
+                    }
+
+                    // Fungsi helper rekursif untuk mencari level keturunan
+                    const getChildren = (parentId) => this.familyData.filter(d => String(d.parentId) === String(parentId));
+
+                    const anakArr = getChildren(id);
+                    anakArr.forEach(anak => {
+                        anak.jk === 'L' ? stats.anak.L++ : stats.anak.P++;
+                        // Asumsi simplifikasi Menantu: Jika anak punya pasangan, dihitung sbg menantu
+                        if (anak.namaPasangan && anak.namaPasangan !== '-') {
+                            anak.jk === 'L' ? stats.menantu.P++ : stats.menantu.L++;
+                        }
+                        
+                        const cucuArr = getChildren(anak.id);
+                        cucuArr.forEach(cucu => {
+                            cucu.jk === 'L' ? stats.cucu.L++ : stats.cucu.P++;
+                            
+                            const cicitArr = getChildren(cucu.id);
+                            cicitArr.forEach(cicit => {
+                                cicit.jk === 'L' ? stats.cicit.L++ : stats.cicit.P++;
+                            });
+                        });
+                    });
+
+                    return stats;
+                }
+            },
+            mounted() {
+                this.loadFromSheet();
+            },
+            methods: {
+                openDetailModal(member) {
+                    this.selectedMember = member;
+                },
+                calculateAge(tglLahir, tglWafat) {
+                    if (!tglLahir || tglLahir === '-') return '-';
+                    const birthYear = new Date(tglLahir).getFullYear();
+                    if (isNaN(birthYear)) return '-';
+                    
+                    let endYear = new Date().getFullYear();
+                    if (tglWafat && tglWafat !== '-') {
+                        const deathYear = new Date(tglWafat).getFullYear();
+                        if (!isNaN(deathYear)) endYear = deathYear;
+                    }
+                    
+                    const age = endYear - birthYear;
+                    return age >= 0 ? `${age} thn` : '-';
+                },
+                formatDateID(dateString) {
+                    if (!dateString || dateString === '-') return '-';
+                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    try {
+                        return new Date(dateString).toLocaleDateString('id-ID', options);
+                    } catch(e) {
+                        return dateString;
+                    }
+                },
+                // Metode Rekursif untuk merender HTML Buku murni tanpa template kompleks
+                generateBookHTML(nodes, level = 1, prefix = "") {
+                    let html = '';
+                    nodes.forEach((node, index) => {
+                        const currentPrefix = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
+                        const isMain = level === 1;
+                        
+                        html += `
+                            <div class="mb-4 avoid-break border-b pb-3 ${isMain ? 'mt-6 bg-emerald-50/50 p-3 rounded' : 'ml-6 border-l-2 pl-4 border-emerald-100'}">
+                                <h3 class="font-bold text-gray-800 ${isMain ? 'text-lg text-emerald-800' : 'text-md'}">
+                                    <span class="text-emerald-600 mr-2">${currentPrefix}.</span> ${node.namaLengkap} ${node.panggilan ? `(${node.panggilan})` : ''}
+                                </h3>
+                                <div class="text-xs text-gray-600 mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                                    <span><b>Status:</b> ${node.statusRelasi}</span>
+                                    <span><b>L/P:</b> ${node.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
+                                    <span><b>Lahir:</b> ${this.formatDateID(node.tglLahir)}</span>
+                                    ${node.statusKehidupan === 'Wafat' ? `<span class="text-red-600"><b>Wafat:</b> ${this.formatDateID(node.tglWafat)}</span>` : ''}
+                                    ${node.namaPasangan && node.namaPasangan !== '-' ? `<span><b>Pasangan:</b> ${node.namaPasangan}</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        if (node.children && node.children.length > 0) {
+                            html += `<div class="ml-2">${this.generateBookHTML(node.children, level + 1, currentPrefix)}</div>`;
+                        }
+                    });
+                    return html;
+                },
+                // Acara Methods
+                saveAcara() {
+                    const newAcara = { ...this.formAcara, id: Date.now() };
+                    this.acaraData.push(newAcara);
+                    localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
+                    this.isAcaraFormOpen = false;
+                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' };
+                },
+                deleteAcara(id) {
+                    if(confirm("Hapus acara ini?")) {
+                        this.acaraData = this.acaraData.filter(a => a.id !== id);
+                        localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
+                    }
+                },
+                // Spreadsheet Integration via PapaParse
+                saveSheetUrl() {
+                    localStorage.setItem('silsilah_sheet_url', this.tempSheetUrl);
+                    this.sheetUrl = this.tempSheetUrl;
+                    this.loadFromSheet();
+                },
+                loadFromSheet() {
+                    if (!this.sheetUrl) {
+                        this.sheetStatus = "Belum ada link spreadsheet. Menggunakan data bawaan.";
+                        return;
+                    }
+                    
+                    this.sheetStatus = "Mengambil data...";
+                    Papa.parse(this.sheetUrl, {
+                        download: true,
+                        header: true,
+                        complete: (results) => {
+                            if (results.data && results.data.length > 0) {
+                                // Filter data kosong yang biasanya terbawa dari CSV
+                                const validData = results.data.filter(row => row.id || row.namaLengkap);
+                                
+                                if(validData.length > 0){
+                                    // Pastikan nama header spreadsheet sesuai (bersifat case-sensitive, jadi kita handle pelan-pelan)
+                                    // Kita berasumsi user menyalin template kolom dengan benar
+                                    this.familyData = validData;
+                                    this.sheetStatus = `Berhasil memuat ${validData.length} data dari Spreadsheet!`;
+                                    setTimeout(() => { this.isSettingsOpen = false; }, 1500);
+                                } else {
+                                     this.sheetStatus = "Data berhasil ditarik, tapi struktur tabel/kolom tidak sesuai atau kosong.";
+                                }
+                            }
+                        },
+                        error: (err) => {
+                            console.error(err);
+                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan disetel ke 'Publik'. Kembali ke data bawaan.";
+                            this.familyData = [...defaultData];
+                        }
+                    });
+                }
+            }
+        });
+
+        // Register Global Component untuk Pohon (Rekursif)
+        app.component('org-node', {
+            props: ['node'],
+            template: '#org-node-template'
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
