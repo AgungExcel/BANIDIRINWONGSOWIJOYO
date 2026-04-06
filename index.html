@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
     <link rel="icon" href="tab.png" type="image/png">
@@ -26,13 +26,13 @@
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
         
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #059669; }
 
         /* POHON SILSILAH */
-        .tree { display: inline-block; text-align: center; }
+        .tree { display: inline-flex; justify-content: center; min-width: 100%; }
         .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
         .tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.3s; }
         .tree li::before, .tree li::after{ content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #34d399; width: 50%; height: 20px; }
@@ -43,38 +43,43 @@
         .tree li:last-child::before{ border-right: 2px solid #34d399; border-radius: 0 5px 0 0; }
         .tree li:first-child::after{ border-radius: 5px 0 0 0; }
         .tree ul ul::before{ content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #34d399; width: 0; height: 20px; margin-left: -1px; }
+
+        .zoom-controls button {
+            backdrop-filter: blur(4px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased overflow-x-hidden">
     <div id="app" v-cloak>
         
         <!-- HEADER -->
         <header class="bg-emerald-800 text-white shadow-lg print-hidden sticky top-0 z-40">
-            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center gap-3 mb-4 md:mb-0">
-                    <div class="bg-white p-2 rounded-full text-emerald-800">
-                        <i class="fas fa-network-wired text-xl"></i>
+            <div class="container mx-auto px-3 py-3 md:px-4 md:py-4 flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center gap-3 mb-3 md:mb-0 w-full md:w-auto justify-center md:justify-start">
+                    <div class="bg-white p-2 rounded-full text-emerald-800 flex-shrink-0">
+                        <i class="fas fa-network-wired text-lg md:text-xl"></i>
                     </div>
-                    <div>
-                        <h1 class="text-2xl font-bold leading-tight">SILSILAH DIGITAL</h1>
-                        <p class="text-emerald-200 text-xs tracking-wider">Keturunan BANI DIRIN WONGSO WIJOYO</p>
+                    <div class="text-center md:text-left">
+                        <h1 class="text-xl md:text-2xl font-bold leading-tight">SILSILAH DIGITAL</h1>
+                        <p class="text-emerald-200 text-[10px] md:text-xs tracking-wider">BANI DIRIN WONGSO WIJOYO</p>
                     </div>
                 </div>
                 
-                <nav class="flex flex-wrap justify-center gap-1 bg-emerald-900/50 p-1 rounded-lg">
-                    <button @click="activeTab = 'home'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'home', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'home'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                <nav class="flex flex-wrap justify-center gap-1 bg-emerald-900/50 p-1 rounded-lg w-full md:w-auto overflow-x-auto">
+                    <button @click="activeTab = 'home'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'home', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'home'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-home"></i> <span class="hidden sm:inline">Beranda</span>
                     </button>
-                    <button @click="activeTab = 'tree'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'tree', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'tree'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                    <button @click="activeTab = 'tree'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'tree', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'tree'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-sitemap"></i> <span class="hidden sm:inline">Pohon</span>
                     </button>
-                    <button @click="activeTab = 'data'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'data', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'data'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                    <button @click="activeTab = 'data'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'data', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'data'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-users"></i> <span class="hidden sm:inline">Data</span>
                     </button>
-                    <button @click="activeTab = 'acara'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'acara', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'acara'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                    <button @click="activeTab = 'acara'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'acara', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'acara'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-calendar-alt"></i> <span class="hidden sm:inline">Acara</span>
                     </button>
-                    <button @click="activeTab = 'book'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'book', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'book'}" class="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 text-sm font-medium">
+                    <button @click="activeTab = 'book'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'book', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'book'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-book-open"></i> <span class="hidden sm:inline">Buku</span>
                     </button>
                 </nav>
@@ -82,85 +87,85 @@
         </header>
 
         <!-- MAIN CONTENT -->
-        <main class="container mx-auto px-4 py-6">
+        <main class="container mx-auto px-2 sm:px-4 py-4 md:py-6">
             
             <!-- 1. BERANDA & DASHBOARD -->
             <transition name="fade" mode="out-in">
-                <div v-if="activeTab === 'home'" class="max-w-5xl mx-auto space-y-6">
-                    <div class="bg-white rounded-[1.25rem] shadow-sm overflow-hidden border border-gray-100">
-                        <div class="h-32 md:h-44 bg-[#0f8754] relative"></div>
-                        <div class="px-6 pb-10 relative">
-                            <div class="flex flex-col items-center -mt-16 md:-mt-20 mb-5 relative">
-                                <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                <div v-if="activeTab === 'home'" class="max-w-5xl mx-auto space-y-4 md:space-y-6">
+                    <div class="bg-white rounded-xl md:rounded-[1.25rem] shadow-sm overflow-hidden border border-gray-100">
+                        <div class="h-24 md:h-44 bg-[#0f8754] relative"></div>
+                        <div class="px-4 md:px-6 pb-8 md:pb-10 relative">
+                            <div class="flex flex-col items-center -mt-12 md:-mt-20 mb-4 md:mb-5 relative">
+                                <div class="w-24 h-24 md:w-40 md:h-40 rounded-full border-4 md:border-[5px] border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
                                     <img :src="mainPhoto" alt="Ikon Beranda" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/200?text=Foto+Tidak+Ditemukan'"/>
                                 </div>
                             </div>
                             <div class="text-center">
-                                <h2 class="text-3xl md:text-[2.5rem] font-extrabold text-[#1c3d5a] mb-1 tracking-tight">SILSILAH KELUARGA</h2>
-                                <h3 class="text-lg md:text-xl font-bold text-[#0f8754] mb-4 tracking-wide">BANI DIRIN WONGSO WIJOYO</h3>
-                                <p class="text-[#5a6b7c] leading-relaxed max-w-2xl mx-auto text-sm md:text-base font-medium">
+                                <h2 class="text-2xl md:text-[2.5rem] font-extrabold text-[#1c3d5a] mb-1 tracking-tight">SILSILAH KELUARGA</h2>
+                                <h3 class="text-base md:text-xl font-bold text-[#0f8754] mb-3 md:mb-4 tracking-wide">BANI DIRIN WONGSO WIJOYO</h3>
+                                <p class="text-[#5a6b7c] leading-relaxed max-w-2xl mx-auto text-xs md:text-base font-medium px-2">
                                     Aplikasi ini didedikasikan untuk mencatat, menyimpan, dan merawat jejak sejarah serta silsilah keturunan dari <span class="font-bold text-[#0f8754]">Mbah Dirin Wongso Wijoyo</span>. 
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="max-w-xl mx-auto -mt-10 mb-4 relative z-10 px-4">
-                        <div class="bg-white rounded-full shadow-lg p-1.5 flex items-center border border-gray-200">
-                            <input type="text" v-model="homeSearchQuery" @keyup.enter="goToDataTab" placeholder="Cari nama anggota keluarga..." class="w-full bg-transparent py-2.5 px-5 focus:outline-none text-gray-700 placeholder-gray-400 font-medium">
-                            <button @click="goToDataTab" class="bg-[#0f8754] text-white p-2.5 rounded-full hover:bg-[#0c6b42] transition shadow-sm w-11 h-11 flex items-center justify-center">
-                                <i class="fas fa-search"></i>
+                    <div class="max-w-xl mx-auto -mt-8 md:-mt-10 mb-4 relative z-10 px-4">
+                        <div class="bg-white rounded-full shadow-lg p-1 md:p-1.5 flex items-center border border-gray-200">
+                            <input type="text" v-model="homeSearchQuery" @keyup.enter="goToDataTab" placeholder="Cari nama anggota keluarga..." class="w-full bg-transparent py-2 md:py-2.5 px-4 md:px-5 focus:outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium">
+                            <button @click="goToDataTab" class="bg-[#0f8754] text-white p-2 md:p-2.5 rounded-full hover:bg-[#0c6b42] transition shadow-sm w-9 h-9 md:w-11 md:h-11 flex items-center justify-center">
+                                <i class="fas fa-search text-sm md:text-base"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <div class="bg-[#fff9f2] border border-[#fce9d5] rounded-[1.25rem] p-6 shadow-sm relative group">
-                            <i class="fas fa-quote-left text-[#fcdab6] text-4xl absolute top-5 left-6"></i>
-                            <div class="text-center px-10 relative z-10">
-                                <p v-if="!isEditingQuote" class="text-lg md:text-xl text-[#4a4a4a] italic mt-3 mb-2 font-medium">
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="bg-[#fff9f2] border border-[#fce9d5] rounded-xl md:rounded-[1.25rem] p-4 md:p-6 shadow-sm relative group">
+                            <i class="fas fa-quote-left text-[#fcdab6] text-2xl md:text-4xl absolute top-3 md:top-5 left-4 md:left-6"></i>
+                            <div class="text-center px-6 md:px-10 relative z-10">
+                                <p v-if="!isEditingQuote" class="text-sm md:text-xl text-[#4a4a4a] italic mt-2 md:mt-3 mb-1 md:mb-2 font-medium">
                                     "{{ quoteText }}"
                                 </p>
-                                <textarea v-else v-model="quoteText" class="w-full bg-white border border-orange-300 rounded p-3 text-center italic text-gray-700 focus:ring-2 focus:ring-orange-400 outline-none" rows="2"></textarea>
+                                <textarea v-else v-model="quoteText" class="w-full bg-white border border-orange-300 rounded p-2 md:p-3 text-center italic text-gray-700 focus:ring-2 focus:ring-orange-400 outline-none text-sm md:text-base" rows="2"></textarea>
                             </div>
-                            <button @click="toggleQuoteEdit" class="absolute bottom-4 right-4 bg-white border border-gray-200 text-gray-500 px-4 py-1.5 rounded-full text-xs shadow-sm hover:bg-gray-50 flex items-center gap-1.5 transition opacity-70 group-hover:opacity-100 font-medium">
+                            <button @click="toggleQuoteEdit" class="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-white border border-gray-200 text-gray-500 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs shadow-sm hover:bg-gray-50 flex items-center gap-1.5 transition opacity-100 md:opacity-70 group-hover:opacity-100 font-medium">
                                 <i class="fas" :class="isEditingQuote ? 'fa-save text-emerald-600' : 'fa-edit'"></i> {{ isEditingQuote ? 'Simpan' : 'Edit' }}
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="bg-[#2c604f] text-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
-                                <i class="fas fa-users absolute -right-2 -bottom-2 text-7xl opacity-[0.15]"></i>
-                                <span class="text-[13px] font-semibold mb-1 z-10 text-white/90">Total Anggota</span>
-                                <span class="text-4xl font-extrabold z-10">{{ dashboardStats.total }}</span>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                            <div class="bg-[#2c604f] text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+                                <i class="fas fa-users absolute -right-2 -bottom-2 text-5xl md:text-7xl opacity-[0.15]"></i>
+                                <span class="text-[11px] md:text-[13px] font-semibold mb-1 z-10 text-white/90">Total Anggota</span>
+                                <span class="text-2xl md:text-4xl font-extrabold z-10">{{ dashboardStats.total }}</span>
                             </div>
-                            <div class="bg-[#1a71b8] text-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
-                                <i class="fas fa-male absolute -right-2 -bottom-2 text-7xl opacity-[0.15]"></i>
-                                <span class="text-[13px] font-semibold mb-1 z-10 text-white/90">Laki-laki</span>
-                                <span class="text-4xl font-extrabold z-10">{{ dashboardStats.L }}</span>
+                            <div class="bg-[#1a71b8] text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+                                <i class="fas fa-male absolute -right-2 -bottom-2 text-5xl md:text-7xl opacity-[0.15]"></i>
+                                <span class="text-[11px] md:text-[13px] font-semibold mb-1 z-10 text-white/90">Laki-laki</span>
+                                <span class="text-2xl md:text-4xl font-extrabold z-10">{{ dashboardStats.L }}</span>
                             </div>
-                            <div class="bg-[#c0175b] text-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
-                                <i class="fas fa-female absolute -right-2 -bottom-2 text-7xl opacity-[0.15]"></i>
-                                <span class="text-[13px] font-semibold mb-1 z-10 text-white/90">Perempuan</span>
-                                <span class="text-4xl font-extrabold z-10">{{ dashboardStats.P }}</span>
+                            <div class="bg-[#c0175b] text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+                                <i class="fas fa-female absolute -right-2 -bottom-2 text-5xl md:text-7xl opacity-[0.15]"></i>
+                                <span class="text-[11px] md:text-[13px] font-semibold mb-1 z-10 text-white/90">Perempuan</span>
+                                <span class="text-2xl md:text-4xl font-extrabold z-10">{{ dashboardStats.P }}</span>
                             </div>
-                            <div class="bg-[#595959] text-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
-                                <i class="fas fa-dove absolute -right-2 -bottom-2 text-7xl opacity-[0.15]"></i>
-                                <span class="text-[13px] font-semibold mb-1 z-10 text-white/90">Telah Wafat</span>
-                                <span class="text-4xl font-extrabold z-10">{{ dashboardStats.wafat }}</span>
+                            <div class="bg-[#595959] text-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+                                <i class="fas fa-dove absolute -right-2 -bottom-2 text-5xl md:text-7xl opacity-[0.15]"></i>
+                                <span class="text-[11px] md:text-[13px] font-semibold mb-1 z-10 text-white/90">Telah Wafat</span>
+                                <span class="text-2xl md:text-4xl font-extrabold z-10">{{ dashboardStats.wafat }}</span>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col items-center">
-                                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">PROPORSI JENIS KELAMIN</h4>
-                                <div class="w-full h-64 relative">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center">
+                                <h4 class="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-6">PROPORSI JENIS KELAMIN</h4>
+                                <div class="w-full h-48 md:h-64 relative">
                                     <canvas id="genderChart"></canvas>
                                 </div>
                             </div>
-                            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col items-center">
-                                <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">STATUS KELUARGA</h4>
-                                <div class="w-full h-64 relative">
+                            <div class="bg-white border border-gray-200 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center">
+                                <h4 class="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 md:mb-6">STATUS KELUARGA</h4>
+                                <div class="w-full h-48 md:h-64 relative">
                                     <canvas id="statusChart"></canvas>
                                 </div>
                             </div>
@@ -169,77 +174,88 @@
                 </div>
 
                 <!-- 2. POHON SILSILAH -->
-                <div v-else-if="activeTab === 'tree'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh] flex flex-col">
-                    <div class="mb-6 flex justify-between items-center">
+                <div v-else-if="activeTab === 'tree'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh] flex flex-col">
+                    <div class="mb-4 md:mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div>
-                            <h2 class="text-2xl font-bold text-emerald-800">Pohon Silsilah</h2>
-                            <p class="text-gray-500">Struktur keturunan secara hierarki (Terurut berdasarkan Anak Ke-).</p>
+                            <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Pohon Silsilah</h2>
+                            <p class="text-xs md:text-sm text-gray-500">Struktur keturunan hierarki (Terurut berdasarkan Anak Ke-).</p>
                         </div>
-                        <button @click="refreshData" class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full hover:bg-emerald-200 transition shadow-sm text-sm font-medium flex items-center gap-2">
+                        <button @click="refreshData" class="w-full md:w-auto justify-center bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg md:rounded-full hover:bg-emerald-200 transition shadow-sm text-sm font-medium flex items-center gap-2">
                             <i class="fas fa-sync-alt" :class="{'animate-spin': isRefreshing}"></i> Segarkan Bagan
                         </button>
                     </div>
-                    <!-- Area Scroll Pohon Silsilah (Diperbaiki agar Center) -->
-                    <div class="flex-1 overflow-auto bg-gray-50 p-8 rounded-lg border border-gray-100 shadow-inner min-h-[500px]">
-                        <!-- Wrapper dengan margin auto untuk memastikan posisi ke tengah -->
-                        <div style="width: max-content; margin: 0 auto; padding-bottom: 20px;">
-                            <div class="tree" v-if="treeData.length > 0">
-                                <ul>
-                                    <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
-                                </ul>
+                    
+                    <!-- AREA POHON DENGAN FITUR ZOOM & RESPONSIVE -->
+                    <div class="relative flex-1 bg-gray-50 rounded-lg border border-gray-100 shadow-inner overflow-hidden flex flex-col h-[500px] md:h-[600px]">
+                        
+                        <!-- Panel Zoom -->
+                        <div class="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex flex-col gap-1.5 zoom-controls border border-gray-200 p-1.5 rounded-lg shadow-sm">
+                            <button @click="zoomIn" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perbesar"><i class="fas fa-search-plus text-sm"></i></button>
+                            <button @click="resetZoom" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 font-bold text-[10px] md:text-xs transition" title="Ukuran Asli">100%</button>
+                            <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
+                        </div>
+
+                        <!-- Kanvas Pohon (Scrollable & Scalable) -->
+                        <div class="flex-1 w-full h-full overflow-auto relative">
+                            <div class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: `scale(${treeZoom})` }">
+                                <div class="tree" v-if="treeData.length > 0">
+                                    <ul>
+                                        <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
+                                    </ul>
+                                </div>
+                                <p v-if="treeData.length === 0" class="text-gray-400 italic text-center mt-10">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                             </div>
-                            <p v-if="treeData.length === 0" class="text-gray-400 italic text-center">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. DATA KELUARGA -->
-                <div v-else-if="activeTab === 'data'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh]">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div v-else-if="activeTab === 'data'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh]">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3 md:gap-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-emerald-800">Daftar Anggota Keluarga</h2>
+                            <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Daftar Anggota Keluarga</h2>
                         </div>
-                        <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                            <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-4 py-2 text-sm min-w-[150px] md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                            <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm min-w-[140px] md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                             
-                            <button @click="refreshData" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition flex flex-shrink-0 items-center justify-center" title="Refresh Data">
+                            <button @click="refreshData" class="bg-blue-100 text-blue-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-blue-200 transition flex flex-shrink-0 items-center justify-center" title="Refresh Data">
                                 <i class="fas fa-sync-alt" :class="{'animate-spin': isRefreshing}"></i>
                             </button>
 
-                            <button @click="openForm('add')" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex flex-shrink-0 items-center gap-2 shadow-md" title="Tambah Data Baru">
-                                <i class="fas fa-user-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah</span>
+                            <button @click="openForm('add')" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-emerald-700 transition flex flex-shrink-0 items-center gap-2 shadow-md" title="Tambah Data Baru">
+                                <i class="fas fa-user-plus text-sm"></i> <span class="hidden md:inline text-sm font-medium">Tambah</span>
                             </button>
 
-                            <button @click="downloadDataExcel" class="bg-[#107c41] text-white px-4 py-2 rounded-full hover:bg-[#0e6b38] transition flex items-center gap-2 flex-shrink-0 shadow-md" title="Unduh Data ke Excel (.xlsx)">
-                                <i class="fas fa-file-excel"></i> <span class="hidden md:inline text-sm font-medium">Unduh Excel</span>
+                            <button @click="downloadDataExcel" class="bg-[#107c41] text-white px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-[#0e6b38] transition flex items-center gap-2 flex-shrink-0 shadow-md" title="Unduh Data ke Excel (.xlsx)">
+                                <i class="fas fa-file-excel text-sm"></i> <span class="hidden md:inline text-sm font-medium">Unduh Excel</span>
                             </button>
 
-                            <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex-shrink-0" title="Pengaturan Server">
-                                <i class="fas fa-cog"></i>
+                            <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full hover:bg-gray-200 transition flex-shrink-0" title="Pengaturan Server">
+                                <i class="fas fa-cog text-sm"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Tabel Data -->
+                    <!-- Tabel Data Responsif -->
                     <div class="overflow-x-auto rounded-lg border border-gray-200">
-                        <table class="w-full text-left border-collapse text-sm min-w-max">
+                        <table class="w-full text-left border-collapse text-xs md:text-sm min-w-max">
                             <thead>
                                 <tr class="bg-[#d1e7dd] text-gray-800 border-b">
-                                    <th class="p-3 font-semibold text-center w-12">No</th>
-                                    <th class="p-3 font-semibold text-center w-16">Foto</th>
-                                    <th class="p-3 font-semibold">Nama Lengkap</th>
-                                    <th class="p-3 font-semibold">Panggilan</th>
-                                    <th class="p-3 font-semibold text-center">L/P</th>
-                                    <th class="p-3 font-semibold text-center">Anak Ke</th>
-                                    <th class="p-3 font-semibold">Status</th>
-                                    <th class="p-3 font-semibold text-center">Aksi</th>
+                                    <th class="p-2 md:p-3 font-semibold text-center w-10 md:w-12">No</th>
+                                    <th class="p-2 md:p-3 font-semibold text-center w-14 md:w-16">Foto</th>
+                                    <th class="p-2 md:p-3 font-semibold">Nama Lengkap</th>
+                                    <th class="p-2 md:p-3 font-semibold">Panggilan</th>
+                                    <th class="p-2 md:p-3 font-semibold text-center">L/P</th>
+                                    <th class="p-2 md:p-3 font-semibold text-center">Anak Ke</th>
+                                    <th class="p-2 md:p-3 font-semibold">Status</th>
+                                    <th class="p-2 md:p-3 font-semibold text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="(item, index) in filteredData" :key="item?.id || index" class="border-b hover:bg-gray-50 transition-colors">
-                                    <td class="p-3 text-center text-gray-500">{{ index + 1 }}</td>
-                                    <td class="p-3 text-center">
-                                        <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
+                                    <td class="p-2 md:p-3 text-center text-gray-500">{{ index + 1 }}</td>
+                                    <td class="p-2 md:p-3 text-center">
+                                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
                                             <template v-if="item && item.foto">
                                                 <img :src="getSafeImageUrl(item.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                                 <i class="fas fa-user text-xs" :class="item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
@@ -247,28 +263,28 @@
                                             <i v-else class="fas fa-user text-xs" :class="item && item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
                                         </div>
                                     </td>
-                                    <td class="p-3 font-medium text-gray-800">{{ item && item.namaLengkap }}</td>
-                                    <td class="p-3 text-gray-600">{{ item && item.panggilan ? item.panggilan : '-' }}</td>
-                                    <td class="p-3 text-center">{{ item && item.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
-                                    <td class="p-3 text-center">{{ item && item.urutanAnak ? item.urutanAnak : '-' }}</td>
-                                    <td class="p-3 text-gray-600">{{ item && item.statusRelasi }}</td>
-                                    <td class="p-3 text-center">
-                                        <div class="flex items-center justify-center gap-1.5">
-                                            <button @click="openDetailModal(item)" class="bg-[#00d0f1] hover:bg-[#00b8d4] text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Detail">
-                                                <i class="fas fa-eye"></i>
+                                    <td class="p-2 md:p-3 font-medium text-gray-800">{{ item && item.namaLengkap }}</td>
+                                    <td class="p-2 md:p-3 text-gray-600">{{ item && item.panggilan ? item.panggilan : '-' }}</td>
+                                    <td class="p-2 md:p-3 text-center">{{ item && item.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
+                                    <td class="p-2 md:p-3 text-center">{{ item && item.urutanAnak ? item.urutanAnak : '-' }}</td>
+                                    <td class="p-2 md:p-3 text-gray-600">{{ item && item.statusRelasi }}</td>
+                                    <td class="p-2 md:p-3 text-center">
+                                        <div class="flex items-center justify-center gap-1 md:gap-1.5">
+                                            <button @click="openDetailModal(item)" class="bg-[#00d0f1] hover:bg-[#00b8d4] text-white px-2 py-1 md:px-3 md:py-1.5 rounded shadow-sm transition-colors" title="Detail">
+                                                <i class="fas fa-eye text-[10px] md:text-xs"></i>
                                             </button>
-                                            <button @click="openForm('edit', item)" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Edit Data">
-                                                <i class="fas fa-edit"></i>
+                                            <button @click="openForm('edit', item)" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded shadow-sm transition-colors" title="Edit Data">
+                                                <i class="fas fa-edit text-[10px] md:text-xs"></i>
                                             </button>
-                                            <button @click="deleteMember(item)" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm" title="Hapus Data">
-                                                <i class="fas fa-trash"></i>
+                                            <button @click="deleteMember(item)" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded shadow-sm transition-colors" title="Hapus Data">
+                                                <i class="fas fa-trash text-[10px] md:text-xs"></i>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr v-if="filteredData.length === 0">
-                                    <td colspan="8" class="p-8 text-center text-gray-500">
-                                        <i class="fas fa-folder-open text-3xl mb-3 text-gray-300"></i><br>
+                                    <td colspan="8" class="p-6 text-center text-gray-500">
+                                        <i class="fas fa-folder-open text-2xl mb-2 text-gray-300"></i><br>
                                         Tidak ada data yang ditemukan.
                                     </td>
                                 </tr>
@@ -278,57 +294,57 @@
                 </div>
 
                 <!-- 4. ACARA / GALERI -->
-                <div v-else-if="activeTab === 'acara'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[70vh]">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div v-else-if="activeTab === 'acara'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh]">
+                    <div class="flex justify-between items-center mb-4 md:mb-6 border-b pb-3 md:pb-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-emerald-800">Acara & Dokumentasi</h2>
-                            <p class="text-gray-500">Galeri foto dan video acara keluarga</p>
+                            <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Acara & Dokumentasi</h2>
+                            <p class="text-xs md:text-sm text-gray-500">Galeri foto dan video acara keluarga</p>
                         </div>
-                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 text-sm flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Tambah Acara
+                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-emerald-700 text-xs md:text-sm flex items-center gap-1.5 md:gap-2">
+                            <i class="fas fa-plus"></i> <span class="hidden md:inline">Tambah Acara</span>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <div v-for="acara in acaraData" :key="acara.id" class="border rounded-xl p-4 shadow-sm hover:shadow-md transition bg-gray-50 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-bold text-lg text-gray-800">{{ acara.judul }}</h3>
-                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
+                                    <h3 class="font-bold text-base md:text-lg text-gray-800">{{ acara.judul }}</h3>
+                                    <span class="text-[10px] md:text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
                                 </div>
-                                <p class="text-gray-500 text-sm mb-4"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
+                                <p class="text-gray-500 text-xs md:text-sm mb-4"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-                                <a :href="acara.gdriveLink" target="_blank" class="text-emerald-600 hover:text-emerald-800 text-sm font-semibold flex items-center gap-1">
+                            <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center">
+                                <a :href="acara.gdriveLink" target="_blank" class="text-emerald-600 hover:text-emerald-800 text-xs md:text-sm font-semibold flex items-center gap-1">
                                     <i class="fab fa-google-drive"></i> Buka di GDrive
                                 </a>
-                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button>
+                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600 p-1 md:p-2"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
-                            <i class="fas fa-images text-4xl mb-3 text-gray-300"></i><br>
-                            Belum ada dokumentasi acara yang ditambahkan.
+                            <i class="fas fa-images text-3xl md:text-4xl mb-3 text-gray-300"></i><br>
+                            <span class="text-sm">Belum ada dokumentasi acara yang ditambahkan.</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 5. BUKU SILSILAH -->
                 <div v-else-if="activeTab === 'book'" class="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[70vh] flex flex-col relative print:shadow-none print:border-none print:bg-white">
-                    <div class="p-6 border-b print-hidden flex justify-between items-center bg-gray-50 rounded-t-xl">
+                    <div class="p-4 md:p-6 border-b print-hidden flex flex-col sm:flex-row justify-between items-center bg-gray-50 rounded-t-xl gap-3">
                         <div>
-                            <h2 class="text-2xl font-bold text-emerald-800">Buku Silsilah</h2>
+                            <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Buku Silsilah</h2>
                         </div>
-                        <button onclick="window.print()" class="bg-emerald-700 text-white px-5 py-2 rounded-lg hover:bg-emerald-800 transition shadow-md flex items-center gap-2">
+                        <button onclick="window.print()" class="w-full sm:w-auto justify-center bg-emerald-700 text-white px-5 py-2 rounded-lg hover:bg-emerald-800 transition shadow-md flex items-center gap-2 text-sm md:text-base">
                             <i class="fas fa-print"></i> Cetak / PDF
                         </button>
                     </div>
-                    <div class="p-8 md:p-12 print:p-0 bg-white text-sm leading-relaxed" id="printable-book">
-                        <div class="text-center mb-12 pb-6 border-b-2 border-emerald-800 pt-4">
-                            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 print:text-black">BUKU SILSILAH KELUARGA</h1>
-                            <h2 class="text-xl font-bold text-emerald-800 mb-4 print:text-black">BANI DIRIN WONGSO WIJOYO</h2>
-                            <p class="mt-4 text-xs text-gray-500">Dicetak pada: {{ new Date().toLocaleDateString('id-ID') }}</p>
+                    <div class="p-6 md:p-12 print:p-0 bg-white text-xs md:text-sm leading-relaxed" id="printable-book">
+                        <div class="text-center mb-8 md:mb-12 pb-4 md:pb-6 border-b-2 border-emerald-800 pt-2 md:pt-4">
+                            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1 md:mb-2 print:text-black">BUKU SILSILAH KELUARGA</h1>
+                            <h2 class="text-lg md:text-xl font-bold text-emerald-800 mb-3 md:mb-4 print:text-black">BANI DIRIN WONGSO WIJOYO</h2>
+                            <p class="mt-2 md:mt-4 text-[10px] md:text-xs text-gray-500">Dicetak pada: {{ new Date().toLocaleDateString('id-ID') }}</p>
                         </div>
-                        <div class="max-w-4xl mx-auto space-y-4">
+                        <div class="max-w-4xl mx-auto space-y-3 md:space-y-4">
                             <div v-html="generateBookHTML(treeData)"></div>
                             <div v-if="treeData.length === 0" class="text-center text-gray-400 py-10">Data kosong.</div>
                         </div>
@@ -338,20 +354,20 @@
 
         </main>
 
-        <!-- CUSTOM UI MODAL -->
+        <!-- CUSTOM UI MODAL (Alert/Confirm) -->
         <div v-if="customDialog.show" class="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-100 transition-transform">
-                <div class="p-6 text-center">
-                    <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4" 
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[320px] md:max-w-sm overflow-hidden transform scale-100 transition-transform">
+                <div class="p-5 md:p-6 text-center">
+                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full mx-auto flex items-center justify-center mb-3 md:mb-4" 
                          :class="customDialog.type === 'warning' ? 'bg-amber-100 text-amber-500' : (customDialog.type === 'success' ? 'bg-emerald-100 text-emerald-500' : 'bg-blue-100 text-blue-500')">
-                        <i class="fas text-3xl" :class="customDialog.type === 'warning' ? 'fa-exclamation-triangle' : (customDialog.type === 'success' ? 'fa-check-circle' : 'fa-info-circle')"></i>
+                        <i class="fas text-2xl md:text-3xl" :class="customDialog.type === 'warning' ? 'fa-exclamation-triangle' : (customDialog.type === 'success' ? 'fa-check-circle' : 'fa-info-circle')"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ customDialog.title }}</h3>
-                    <p class="text-sm text-gray-600">{{ customDialog.message }}</p>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-1 md:mb-2">{{ customDialog.title }}</h3>
+                    <p class="text-xs md:text-sm text-gray-600">{{ customDialog.message }}</p>
                 </div>
-                <div class="bg-gray-50 px-6 py-4 flex justify-center gap-3 border-t">
-                    <button v-if="customDialog.isConfirm" @click="customDialog.show = false" class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition">Batal</button>
-                    <button @click="confirmCustomDialog" class="px-5 py-2 rounded-lg text-white font-semibold transition shadow-sm"
+                <div class="bg-gray-50 px-4 md:px-6 py-3 md:py-4 flex justify-center gap-2 md:gap-3 border-t">
+                    <button v-if="customDialog.isConfirm" @click="customDialog.show = false" class="px-4 md:px-5 py-1.5 md:py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition text-xs md:text-sm">Batal</button>
+                    <button @click="confirmCustomDialog" class="px-4 md:px-5 py-1.5 md:py-2 rounded-lg text-white font-semibold transition shadow-sm text-xs md:text-sm"
                             :class="customDialog.type === 'warning' ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'">
                         {{ customDialog.isConfirm ? 'Ya, Lanjutkan' : 'Mengerti' }}
                     </button>
@@ -360,77 +376,77 @@
         </div>
 
         <!-- MODAL: DETAIL PROFIL -->
-        <div v-if="selectedMember" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="selectedMember = null">
+        <div v-if="selectedMember" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-3 md:p-4 print-hidden" @click.self="selectedMember = null">
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div class="bg-[#1e7e53] text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-xl font-semibold">Detail Profil</h3>
-                    <button @click="selectedMember = null" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                <div class="bg-[#1e7e53] text-white px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
+                    <h3 class="text-lg md:text-xl font-semibold">Detail Profil</h3>
+                    <button @click="selectedMember = null" class="text-white/80 hover:text-white text-xl md:text-2xl leading-none">&times;</button>
                 </div>
                 
-                <div class="p-6 overflow-y-auto">
-                    <div class="flex flex-col md:flex-row gap-8">
+                <div class="p-4 md:p-6 overflow-y-auto">
+                    <div class="flex flex-col md:flex-row gap-6 md:gap-8">
                         <div class="w-full md:w-1/4 flex flex-col items-center text-center">
-                            <div class="w-24 h-24 rounded-full border-2 border-[#1e7e53] shadow-md overflow-hidden mb-3 bg-gray-100 flex items-center justify-center relative group">
+                            <div class="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#1e7e53] shadow-md overflow-hidden mb-2 md:mb-3 bg-gray-100 flex items-center justify-center relative group">
                                 <template v-if="selectedMember && selectedMember.foto">
                                     <img :src="getSafeImageUrl(selectedMember.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <i class="fas fa-user text-5xl" :class="selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
+                                    <i class="fas fa-user text-4xl md:text-5xl" :class="selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                 </template>
-                                <i v-else class="fas fa-user text-5xl" :class="selectedMember && selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
+                                <i v-else class="fas fa-user text-4xl md:text-5xl" :class="selectedMember && selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
                             </div>
-                            <h4 class="text-2xl font-bold text-[#1e7e53] mb-2">{{ selectedMember && (selectedMember.panggilan || (selectedMember.namaLengkap ? selectedMember.namaLengkap.split(' ')[0] : '')) }}</h4>
-                            <span class="bg-gray-500 text-white text-xs px-4 py-1.5 rounded-full font-medium tracking-wide">
+                            <h4 class="text-lg md:text-2xl font-bold text-[#1e7e53] mb-1 md:mb-2">{{ selectedMember && (selectedMember.panggilan || (selectedMember.namaLengkap ? selectedMember.namaLengkap.split(' ')[0] : '')) }}</h4>
+                            <span class="bg-gray-500 text-white text-[10px] md:text-xs px-3 md:px-4 py-1 md:py-1.5 rounded-full font-medium tracking-wide">
                                 {{ selectedMember && selectedMember.statusRelasi }}
                             </span>
                         </div>
 
-                        <div class="w-full md:w-3/4 text-sm">
+                        <div class="w-full md:w-3/4 text-xs md:text-sm">
                             <table class="w-full">
                                 <tbody>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Lengkap</td><td class="w-2/3">: {{ selectedMember.namaLengkap }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Anak Ke-</td><td class="w-2/3">: {{ selectedMember.urutanAnak || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Jenis Kelamin</td><td class="w-2/3">: {{ selectedMember.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Tempat, Tgl Lahir</td><td class="w-2/3">: {{ selectedMember.tempatLahir }}, {{ formatDateID(selectedMember.tglLahir) }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Usia</td><td class="w-2/3">: {{ calculateAge(selectedMember.tglLahir, selectedMember.tglWafat) }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Kehidupan</td><td class="w-2/3">: {{ selectedMember.statusKehidupan }}</td></tr>
-                                    <tr class="mb-3 flex" v-if="selectedMember.statusKehidupan === 'Wafat'">
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Lengkap</td><td class="w-2/3">: {{ selectedMember.namaLengkap }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Anak Ke-</td><td class="w-2/3">: {{ selectedMember.urutanAnak || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Jenis Kelamin</td><td class="w-2/3">: {{ selectedMember.jk === 'L' ? 'Laki-laki' : 'Perempuan' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Tempat, Tgl Lahir</td><td class="w-2/3">: {{ selectedMember.tempatLahir }}, {{ formatDateID(selectedMember.tglLahir) }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Usia</td><td class="w-2/3">: {{ calculateAge(selectedMember.tglLahir, selectedMember.tglWafat) }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Kehidupan</td><td class="w-2/3">: {{ selectedMember.statusKehidupan }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex" v-if="selectedMember.statusKehidupan === 'Wafat'">
                                         <td class="w-1/3 font-semibold text-gray-700">Wafat & Makam</td>
                                         <td class="w-2/3 text-red-600 font-medium">: {{ formatDateID(selectedMember.tglWafat) }} (Makam: {{ selectedMember.makam || '-' }})</td>
                                     </tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ayah</td><td class="w-2/3">: {{ selectedMember.namaAyah || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ibu</td><td class="w-2/3">: {{ selectedMember.namaIbu || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Pernikahan</td><td class="w-2/3">: {{ selectedMember.statusPernikahan || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Pasangan</td><td class="w-2/3 font-bold">: {{ selectedMember.namaPasangan || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Alamat</td><td class="w-2/3">: {{ selectedMember.alamat || '-' }}</td></tr>
-                                    <tr class="mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">No. HP</td><td class="w-2/3">: {{ selectedMember.noHp || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ayah</td><td class="w-2/3">: {{ selectedMember.namaAyah || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Ibu</td><td class="w-2/3">: {{ selectedMember.namaIbu || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Status Pernikahan</td><td class="w-2/3">: {{ selectedMember.statusPernikahan || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Nama Pasangan</td><td class="w-2/3 font-bold">: {{ selectedMember.namaPasangan || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">Alamat</td><td class="w-2/3">: {{ selectedMember.alamat || '-' }}</td></tr>
+                                    <tr class="mb-2 md:mb-3 flex"><td class="w-1/3 font-semibold text-gray-700">No. HP</td><td class="w-2/3">: {{ selectedMember.noHp || '-' }}</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        <h4 class="text-center font-bold text-[#1e7e53] mb-4">Statistik Keturunan & Relasi Ke Bawah</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center text-sm" v-if="memberStats">
-                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                    <div class="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+                        <h4 class="text-center font-bold text-[#1e7e53] mb-3 md:mb-4 text-sm md:text-base">Statistik Keturunan & Relasi Ke Bawah</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 text-center text-[10px] md:text-sm" v-if="memberStats">
+                            <div class="border rounded-lg p-2 md:p-3 bg-gray-50 shadow-sm">
                                 <div class="font-bold text-gray-700 mb-1">Pasangan</div>
                                 <div class="text-[#0d6efd] font-bold inline">{{ memberStats.pasangan.L }}</div> L | 
                                 <div class="text-[#dc3545] font-bold inline">{{ memberStats.pasangan.P }}</div> P
                             </div>
-                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                            <div class="border rounded-lg p-2 md:p-3 bg-gray-50 shadow-sm">
                                 <div class="font-bold text-gray-700 mb-1">Anak</div>
                                 <div class="text-[#0d6efd] font-bold inline">{{ memberStats.anak.L }}</div> L | 
                                 <div class="text-[#dc3545] font-bold inline">{{ memberStats.anak.P }}</div> P
                             </div>
-                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                            <div class="border rounded-lg p-2 md:p-3 bg-gray-50 shadow-sm">
                                 <div class="font-bold text-gray-700 mb-1">Menantu</div>
                                 <div class="text-[#0d6efd] font-bold inline">{{ memberStats.menantu.L }}</div> L | 
                                 <div class="text-[#dc3545] font-bold inline">{{ memberStats.menantu.P }}</div> P
                             </div>
-                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                            <div class="border rounded-lg p-2 md:p-3 bg-gray-50 shadow-sm">
                                 <div class="font-bold text-gray-700 mb-1">Cucu</div>
                                 <div class="text-[#0d6efd] font-bold inline">{{ memberStats.cucu.L }}</div> L | 
                                 <div class="text-[#dc3545] font-bold inline">{{ memberStats.cucu.P }}</div> P
                             </div>
-                            <div class="border rounded-lg p-3 bg-gray-50 shadow-sm">
+                            <div class="border rounded-lg p-2 md:p-3 bg-gray-50 shadow-sm">
                                 <div class="font-bold text-gray-700 mb-1">Cicit</div>
                                 <div class="text-[#0d6efd] font-bold inline">{{ memberStats.cicit.L }}</div> L | 
                                 <div class="text-[#dc3545] font-bold inline">{{ memberStats.cicit.P }}</div> P
@@ -439,8 +455,8 @@
                     </div>
                 </div>
                 
-                <div class="p-4 border-t bg-gray-50">
-                    <button @click="selectedMember = null" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition">
+                <div class="p-3 md:p-4 border-t bg-gray-50">
+                    <button @click="selectedMember = null" class="w-full md:w-auto bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition text-sm md:text-base">
                         Tutup
                     </button>
                 </div>
@@ -449,70 +465,70 @@
 
         <!-- MODAL: SETTINGS SPREADSHEET & APPS SCRIPT -->
         <div v-if="isSettingsOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isSettingsOpen = false">
-            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-link text-emerald-600 mr-2"></i>Pengaturan Database</h3>
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-5 md:p-6">
+                <h3 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 border-b pb-2"><i class="fas fa-link text-emerald-600 mr-2"></i>Pengaturan Database</h3>
                 
-                <div class="space-y-4">
+                <div class="space-y-3 md:space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Baca Data (Export CSV Sheets)</label>
-                        <p class="text-xs text-gray-500 mb-2">Ini untuk memuat data dari Spreadsheet secara otomatis.</p>
-                        <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/.../export?format=csv" class="w-full border p-2 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Link Baca Data (Export CSV Sheets)</label>
+                        <p class="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Ini untuk memuat data dari Spreadsheet secara otomatis.</p>
+                        <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/.../export?format=csv" class="w-full border p-2 rounded-md text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50">
                     </div>
                     
-                    <div class="pt-4 border-t border-gray-100">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Tulis Data (URL Google Apps Script)</label>
-                        <p class="text-xs text-gray-500 mb-2">Wajib diisi jika Anda ingin fitur <strong>Simpan/Upload Foto Langsung ke Server</strong> berfungsi.</p>
-                        <input type="text" v-model="tempAppScriptUrl" placeholder="https://script.google.com/macros/s/AKfy.../exec" class="w-full border p-2 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-blue-50">
+                    <div class="pt-3 md:pt-4 border-t border-gray-100">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Link Tulis Data (URL Google Apps Script)</label>
+                        <p class="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Wajib diisi jika Anda ingin fitur <strong>Simpan/Upload Foto Langsung ke Server</strong> berfungsi.</p>
+                        <input type="text" v-model="tempAppScriptUrl" placeholder="https://script.google.com/macros/s/AKfy.../exec" class="w-full border p-2 rounded-md text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-blue-50">
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 mt-6">
-                    <button @click="isSettingsOpen = false" class="px-4 py-2 bg-gray-200 rounded-md text-sm">Batal</button>
-                    <button @click="saveSettings" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700">Simpan Pengaturan</button>
+                <div class="flex justify-end gap-2 mt-5 md:mt-6">
+                    <button @click="isSettingsOpen = false" class="px-3 py-1.5 md:px-4 md:py-2 bg-gray-200 rounded-md text-xs md:text-sm">Batal</button>
+                    <button @click="saveSettings" class="px-3 py-1.5 md:px-4 md:py-2 bg-emerald-600 text-white rounded-md text-xs md:text-sm hover:bg-emerald-700">Simpan Pengaturan</button>
                 </div>
             </div>
         </div>
 
         <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
-        <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
-            <div class="bg-[#f3f4f6] rounded-2xl shadow-2xl w-full max-w-4xl my-6 overflow-hidden">
-                <div class="bg-white px-8 py-5 flex items-center border-b border-gray-200">
-                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mr-4">
+        <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-2 md:p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
+            <div class="bg-[#f3f4f6] rounded-xl md:rounded-2xl shadow-2xl w-full max-w-4xl my-4 md:my-6 overflow-hidden">
+                <div class="bg-white px-4 md:px-8 py-4 md:py-5 flex items-center border-b border-gray-200">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-lg md:text-xl mr-3 md:mr-4">
                         <i :class="formMode === 'add' ? 'fas fa-user-plus' : 'fas fa-user-edit'"></i>
                     </div>
                     <div class="flex-1">
-                        <h2 class="text-xl font-bold text-gray-800">{{ formMode === 'add' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
-                        <p class="text-sm text-gray-500">Lengkapi atau ubah data silsilah di bawah ini</p>
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">{{ formMode === 'add' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
+                        <p class="text-xs md:text-sm text-gray-500">Lengkapi atau ubah data silsilah di bawah ini</p>
                     </div>
-                    <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl transition">&times;</button>
+                    <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl md:text-2xl transition px-2">&times;</button>
                 </div>
                 
-                <form @submit.prevent="saveMember" class="p-8 pt-4 space-y-6">
+                <form @submit.prevent="saveMember" class="p-4 md:p-8 pt-3 md:pt-4 space-y-4 md:space-y-6">
                     <!-- KARTU 1: INFORMASI DASAR -->
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
                             <i class="fas fa-id-card"></i> INFORMASI DASAR
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap *</label>
-                                <input required v-model="formMember.namaLengkap" type="text" placeholder="Masukkan nama sesuai KTP" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Lengkap *</label>
+                                <input required v-model="formMember.namaLengkap" type="text" placeholder="Masukkan nama" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Panggilan</label>
-                                <input v-model="formMember.panggilan" type="text" placeholder="Nama akrab sehari-hari" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Panggilan</label>
+                                <input v-model="formMember.panggilan" type="text" placeholder="Nama sehari-hari" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin *</label>
-                                <select required v-model="formMember.jk" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin *</label>
+                                <select required v-model="formMember.jk" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
                                     <option value="" disabled>Pilih Gender...</option>
                                     <option value="L">Laki-laki</option>
                                     <option value="P">Perempuan</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Keluarga *</label>
-                                <select required v-model="formMember.statusRelasi" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Keluarga *</label>
+                                <select required v-model="formMember.statusRelasi" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
                                     <option value="" disabled>Pilih Status...</option>
                                     <option>Leluhur Utama</option>
                                     <option>Garis Keturunan</option>
@@ -526,73 +542,72 @@
                     </div>
 
                     <!-- KARTU 2: KELAHIRAN & KEHIDUPAN -->
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
                             <i class="far fa-calendar-alt"></i> KELAHIRAN & KEHIDUPAN
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tempat Lahir</label>
-                                <input v-model="formMember.tempatLahir" type="text" placeholder="Kota/Kabupaten" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tempat Lahir</label>
+                                <input v-model="formMember.tempatLahir" type="text" placeholder="Kota/Kabupaten" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
-                                <input v-model="formMember.tglLahir" type="date" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
+                                <input v-model="formMember.tglLahir" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kehidupan</label>
-                                <select v-model="formMember.statusKehidupan" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Kehidupan</label>
+                                <select v-model="formMember.statusKehidupan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
                                     <option>Hidup</option>
                                     <option>Wafat</option>
                                 </select>
                             </div>
                         </div>
-                        <div v-if="formMember.statusKehidupan === 'Wafat'" class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 pt-5 border-t border-gray-100">
+                        <div v-if="formMember.statusKehidupan === 'Wafat'" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mt-4 pt-4 md:mt-5 md:pt-5 border-t border-gray-100">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Wafat</label>
-                                <input v-model="formMember.tglWafat" type="date" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Wafat</label>
+                                <input v-model="formMember.tglWafat" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Lokasi Makam</label>
-                                <input v-model="formMember.makam" type="text" placeholder="Tulis nama/lokasi makam" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Lokasi Makam</label>
+                                <input v-model="formMember.makam" type="text" placeholder="Tulis nama/lokasi makam" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                         </div>
                     </div>
 
                     <!-- KARTU 3: GARIS SILSILAH & PERNIKAHAN -->
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
                             <i class="fas fa-sitemap"></i> GARIS SILSILAH & PERNIKAHAN
                         </h4>
-                        <div class="mb-5">
-                            <label class="block text-xs font-bold text-emerald-700 mb-1">Hubungkan ke Pohon: Pilih Induk/Orang Tua Utama *</label>
-                            <select required v-model="formMember.parentId" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-800 font-medium">
+                        <div class="mb-4 md:mb-5">
+                            <label class="block text-[11px] md:text-xs font-bold text-emerald-700 mb-1">Hubungkan ke Pohon: Induk Utama *</label>
+                            <select required v-model="formMember.parentId" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-800 font-medium">
                                 <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
                                 <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
                             </select>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 border-t border-gray-100 pt-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Ayah Kandung</label>
-                                <input v-model="formMember.namaAyah" type="text" placeholder="Atau ketik manual jika tidak ada" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ayah Kandung</label>
+                                <input v-model="formMember.namaAyah" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Ibu Kandung</label>
-                                <input v-model="formMember.namaIbu" type="text" placeholder="Atau ketik manual jika tidak ada" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ibu Kandung</label>
+                                <input v-model="formMember.namaIbu" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                         </div>
 
-                        <!-- INPUT BARU: URUTAN ANAK -->
-                        <div class="mb-5 border-t border-gray-100 pt-5">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Urutan Kelahiran (Anak Ke-)</label>
-                            <input v-model="formMember.urutanAnak" type="number" placeholder="Contoh: 1, 2, 3..." class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            <p class="text-[10px] text-gray-500 mt-1">Isi dengan angka untuk mengurutkan posisi anak dari kiri ke kanan di Pohon Silsilah.</p>
+                        <div class="mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
+                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Urutan Kelahiran (Anak Ke-)</label>
+                            <input v-model="formMember.urutanAnak" type="number" placeholder="Contoh: 1, 2, 3..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <p class="text-[9px] md:text-[10px] text-gray-500 mt-1">Mengurutkan posisi anak dari kiri ke kanan di Pohon Silsilah.</p>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-gray-100 pt-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 border-t border-gray-100 pt-4 md:pt-5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Pernikahan</label>
-                                <select v-model="formMember.statusPernikahan" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Pernikahan</label>
+                                <select v-model="formMember.statusPernikahan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
                                     <option>Belum Menikah</option>
                                     <option>Menikah</option>
                                     <option>Cerai Hidup</option>
@@ -600,47 +615,47 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Pasangan</label>
-                                <input v-model="formMember.namaPasangan" type="text" placeholder="Tulis nama suami/istri" class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Pasangan</label>
+                                <input v-model="formMember.namaPasangan" type="text" placeholder="Tulis nama suami/istri" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                             </div>
                         </div>
                     </div>
 
                     <!-- KARTU 4: KONTAK PRIBADI & FOTO -->
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
                             <i class="fas fa-phone-alt"></i> KONTAK PRIBADI & FOTO
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor HP / WhatsApp</label>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nomor HP / WhatsApp</label>
                                 <div class="relative">
-                                    <i class="fab fa-whatsapp absolute left-3 top-3 text-green-500"></i>
-                                    <input v-model="formMember.noHp" type="text" placeholder="08123456789" class="w-full border border-gray-300 rounded-md p-2.5 pl-9 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                    <i class="fab fa-whatsapp absolute left-3 top-2.5 md:top-3 text-green-500 text-sm md:text-base"></i>
+                                    <input v-model="formMember.noHp" type="text" placeholder="08123456789" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 pl-8 md:pl-9 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <div class="flex items-center gap-2 md:gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
                                         <template v-if="formMember.foto">
                                             <img :src="getSafeImageUrl(formMember.foto)" class="w-full h-full object-cover">
                                         </template>
-                                        <i v-else class="fas fa-user" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
+                                        <i v-else class="fas fa-user text-sm md:text-base" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                                     </div>
-                                    <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1.5 text-sm file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                                    <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1 md:p-1.5 text-[10px] md:text-sm file:mr-2 md:file:mr-4 file:py-1 file:px-2 md:file:px-4 file:rounded file:border-0 file:text-[10px] md:file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Alamat Terakhir / Domisili</label>
-                            <textarea v-model="formMember.alamat" rows="2" placeholder="Tulis alamat lengkap..." class="w-full border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-y"></textarea>
+                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Alamat Terakhir / Domisili</label>
+                            <textarea v-model="formMember.alamat" rows="2" placeholder="Tulis alamat lengkap..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-y"></textarea>
                         </div>
                     </div>
 
                     <!-- Footer / Submit Button -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                        <button type="submit" :disabled="isSaving" class="w-full py-3.5 bg-[#12b981] hover:bg-[#059669] text-white font-bold rounded-lg transition shadow flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    <div class="bg-white p-3 md:p-4 rounded-lg md:rounded-xl shadow-sm border border-gray-200">
+                        <button type="submit" :disabled="isSaving" class="w-full py-2.5 md:py-3.5 bg-[#12b981] hover:bg-[#059669] text-white font-bold rounded-lg transition shadow flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm md:text-base">
                             <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
                             <i v-else class="fas fa-cloud-upload-alt"></i> 
                             {{ isSaving ? 'Menyimpan ke Server...' : 'Simpan Data Anggota' }}
@@ -695,27 +710,28 @@
     <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah) -->
     <script type="text/x-template" id="org-node-template">
         <li v-if="node">
-            <div class="z-10 inline-block bg-white border-2 border-emerald-600 rounded-lg shadow-md px-4 pt-2 pb-3 m-2 min-w-[150px] max-w-[200px] text-center relative group cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300" @click="$emit('show-detail', node)">
-                <div class="w-full h-1.5 absolute top-0 left-0 rounded-t-sm" :class="node.jk === 'L' ? 'bg-[#0d6efd]' : 'bg-[#dc3545]'"></div>
+            <div class="z-10 inline-block bg-white border-2 border-emerald-600 rounded-lg shadow-md px-3 pt-2 pb-3 m-1.5 md:px-4 md:m-2 min-w-[120px] max-w-[160px] md:min-w-[150px] md:max-w-[200px] text-center relative group cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300" @click="$emit('show-detail', node)">
+                <div class="w-full h-1 md:h-1.5 absolute top-0 left-0 rounded-t-sm" :class="node.jk === 'L' ? 'bg-[#0d6efd]' : 'bg-[#dc3545]'"></div>
                 
-                <div class="w-14 h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-2 mt-2">
+                <div class="w-10 h-10 md:w-14 md:h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-1.5 md:mb-2 mt-1 md:mt-2">
                     <template v-if="node && node.foto">
                         <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <i class="fas fa-user text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
+                        <i class="fas fa-user text-xl md:text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
                     <!-- Ikon Kosong Berbeda Warna berdasarkan L/P -->
-                    <i v-else class="fas fa-user text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
+                    <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                 </div>
 
-                <!-- TAMPILAN NAMA DIGANTI JADI NAMA LENGKAP -->
-                <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">{{ node.namaLengkap }}</h3>
+                <!-- TAMPILAN NAMA LENGKAP -->
+                <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight mb-0.5 md:mb-1 px-1 break-words whitespace-normal">{{ node.namaLengkap }}</h3>
                 
-                <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[10px]"></i> {{ node.namaPasangan }}</p>
-                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full mt-2 inline-block font-bold tracking-wide">
+                <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[9px] md:text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[8px] md:text-[10px]"></i> {{ node.namaPasangan }}</p>
+                <span class="text-[8px] md:text-[10px] bg-emerald-100 text-emerald-800 px-2 md:px-2.5 py-0.5 rounded-full mt-1.5 md:mt-2 inline-block font-bold tracking-wide">
                     {{ node.statusRelasi }}
                 </span>
             </div>
 
+            <!-- Rekursif Anak-anaknya -->
             <ul v-if="node.children && node.children.length > 0">
                 <org-node v-for="(child, index) in node.children" :key="child && child.id ? child.id : index" :node="child" @show-detail="$emit('show-detail', $event)"></org-node>
             </ul>
@@ -727,6 +743,8 @@
 
         let genderChartInstance = null;
         let statusChartInstance = null;
+
+        const defaultData = [];
 
         const app = createApp({
             data() {
@@ -748,6 +766,9 @@
                     isFormOpen: false,
                     formMode: 'add',
                     isSaving: false,
+                    
+                    // State untuk Fitur Zoom Pohon
+                    treeZoom: 1,
 
                     customDialog: {
                         show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
@@ -810,6 +831,7 @@
                                 return childPid !== "" && childPid !== "-" && childPid === parentNodeId && childPid !== childId;
                             });
                             
+                            // SORTIR BERDASARKAN URUTAN ANAK
                             children.sort((a, b) => {
                                 const numA = parseInt(a.urutanAnak) || 999;
                                 const numB = parseInt(b.urutanAnak) || 999;
@@ -904,6 +926,17 @@
                 setTimeout(() => { this.renderCharts(); }, 500);
             },
             methods: {
+                // FUNGSI ZOOM POHON SILSILAH
+                zoomIn() {
+                    this.treeZoom = Math.min(2, this.treeZoom + 0.1);
+                },
+                zoomOut() {
+                    this.treeZoom = Math.max(0.3, this.treeZoom - 0.1);
+                },
+                resetZoom() {
+                    this.treeZoom = 1;
+                },
+
                 getSafeImageUrl(url) {
                     if (!url) return '';
                     if (url.startsWith('data:')) return url; 
@@ -1081,8 +1114,10 @@
                     try {
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
+                            // Langsung tampil di layar (Tanpa perlu menunggu dari server)
                             this.familyData.push({ ...this.formMember });
                         } else {
+                            // Update langsung di layar
                             const index = this.familyData.findIndex(item => item.id === this.formMember.id);
                             if (index !== -1) {
                                 this.familyData.splice(index, 1, { ...this.formMember });
@@ -1099,33 +1134,34 @@
                             }).catch(e => console.error(e));
                         }
                         
-                        this.showAlert('Berhasil Disimpan', 'Data dan foto berhasil diperbarui di tampilan.', 'success');
+                        this.showAlert('Berhasil', 'Data sudah diupdate di layar Anda. Sinkronisasi Server sedang berjalan di latar belakang.', 'success');
                         this.isFormOpen = false;
 
+                        // TIDAK ME-LOAD ULANG SHEET AGAR DATA SEMENTARA TIDAK HILANG OLEH CACHE SERVER
+
                     } catch(err) {
-                        this.showAlert('Perhatian', "Terjadi kesalahan. Data hanya disimpan ke layar lokal.", 'warning');
+                        this.showAlert('Perhatian', "Terjadi kesalahan. Data hanya disimpan sementara.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
                     }
                 },
                 deleteMember(member) {
-                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", () => {
-                        // 1. Langsung hapus dari tampilan layar agar tidak "muncul lagi" sementara server Google sedang mikir
+                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen?", () => {
+                        
+                        // Menghapus langsung dari tampilan secara Instant
                         this.familyData = this.familyData.filter(m => m.id !== member.id);
 
                         if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
-                            // 2. Perintah dikirim ke server secara diam-diam
+                            // Mengirim ID ke server dalam format String yang paling aman
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
-                                body: JSON.stringify({ action: 'delete', id: member.id })
-                            }).then(() => {
-                                // Sengaja tidak me-load data ulang agar data tidak kembali dari cache Google lama
+                                body: JSON.stringify({ action: 'delete', id: String(member.id) })
                             }).catch(e => console.error(e));
                             
-                            this.showAlert('Hapus Berhasil', "Data berhasil dihapus dari sistem.", 'success');
+                            this.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
                         }
                     });
                 },
