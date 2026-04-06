@@ -431,8 +431,8 @@
                     isAcaraFormOpen: false,
                     
                     // Spreadsheet Integration (Link Spreadsheet Default Disematkan)
-                    sheetUrl: localStorage.getItem('silsilah_sheet_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
-                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
+                    sheetUrl: localStorage.getItem('silsilah_sheet_url_v2') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
+                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url_v2') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     sheetStatus: '',
 
                     formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' }
@@ -572,7 +572,7 @@
                 },
                 // Spreadsheet Integration via PapaParse
                 saveSheetUrl() {
-                    localStorage.setItem('silsilah_sheet_url', this.tempSheetUrl);
+                    localStorage.setItem('silsilah_sheet_url_v2', this.tempSheetUrl);
                     this.sheetUrl = this.tempSheetUrl;
                     this.loadFromSheet();
                 },
