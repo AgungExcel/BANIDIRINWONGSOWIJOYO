@@ -19,6 +19,7 @@
 
     <style>
         @media print {
+            @page { size: landscape; margin: 10mm; }
             body { background-color: white; }
             .print-hidden { display: none !important; }
             .print-block { display: block !important; }
@@ -82,9 +83,8 @@
                         <i class="fas fa-calendar-alt"></i> <span class="hidden sm:inline">Acara</span>
                     </button>
                     <button @click="activeTab = 'book'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'book', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'book'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
-                        <i class="fas fa-book-open"></i> <span class="hidden sm:inline">Buku</span>
+                        <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">Buku</span>
                     </button>
-                    <!-- MENU BARU: HARI BANGAS -->
                     <button @click="activeTab = 'bangas'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'bangas', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'bangas'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-calendar-times"></i> <span class="hidden sm:inline">Hari Bangas</span>
                     </button>
@@ -187,7 +187,7 @@
                             <p class="text-xs md:text-sm text-gray-500">Struktur keturunan hierarki (Terurut berdasarkan Anak Ke-).</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                            <!-- TOMBOL DOWNLOAD PDF POHON -->
+                            <!-- TOMBOL DOWNLOAD PDF LANDSCAPE -->
                             <button @click="downloadPDF('tree-content', 'Pohon_Silsilah_Bani_Dirin.pdf')" class="w-full md:w-auto justify-center bg-blue-100 text-blue-700 px-4 py-2 rounded-lg md:rounded-full hover:bg-blue-200 transition shadow-sm text-sm font-medium flex items-center gap-2">
                                 <i class="fas fa-file-pdf"></i> Download PDF
                             </button>
@@ -207,9 +207,9 @@
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <!-- Kanvas Pohon (Scrollable & Scalable) -->
+                        <!-- Kanvas Pohon -->
                         <div class="flex-1 w-full h-full overflow-auto relative">
-                            <!-- Container Tree ini akan diexport jadi PDF -->
+                            <!-- ID tree-content akan diexport ke PDF -->
                             <div id="tree-content" class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: `scale(${treeZoom})` }">
                                 <div class="tree" v-if="treeData.length > 0">
                                     <ul>
@@ -364,15 +364,73 @@
                     </div>
                 </div>
 
-                <!-- 6. HARI BANGAS -->
-                <div v-else-if="activeTab === 'bangas'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh] flex flex-col items-center">
-                    <div class="mb-4 md:mb-6 w-full border-b pb-3 md:pb-4 text-center md:text-left">
-                        <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Hari Bangas & Arah Nogo Tahun</h2>
-                        <p class="text-xs md:text-sm text-gray-500">Panduan hari Bangas (Nahas) berdasarkan perhitungan kalender Jawa.</p>
+                <!-- 6. HARI BANGAS (BARU) -->
+                <div v-else-if="activeTab === 'bangas'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh] flex flex-col">
+                    <div class="mb-4 border-b pb-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Cek Hari Bangas (Nahas)</h2>
+                        <p class="text-sm text-gray-500">Sistem otomatis mengecek apakah hari ini adalah Hari Bangas atau Pangkreman berdasarkan Kalender Jawa.</p>
                     </div>
-                    <div class="max-w-2xl w-full rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-50 flex justify-center p-2">
-                        <img src="BANGAS.jpg" alt="Hari Bangas" class="w-full h-auto object-contain max-h-[800px]">
+
+                    <!-- Banner Status Hari Ini -->
+                    <div class="mb-6 p-6 rounded-xl text-center border-2 transition-colors" :class="isTodayBangas ? 'bg-red-50 border-red-500' : 'bg-emerald-50 border-emerald-500'">
+                        <p class="text-gray-600 text-xs md:text-sm mb-1 font-medium">Status Hari Ini ({{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}):</p>
+                        <h3 class="text-xl md:text-3xl font-bold mb-4" :class="isTodayBangas ? 'text-red-700' : 'text-emerald-700'">{{ todayJavanese.fullString }}</h3>
+
+                        <div v-if="isTodayBangas" class="inline-block bg-red-600 text-white px-6 py-2.5 rounded-full font-bold text-sm md:text-lg animate-pulse shadow-lg">
+                            <i class="fas fa-exclamation-triangle mr-2"></i> PERHATIAN: HARI INI ADALAH {{ bangasReason.toUpperCase() }}!
+                        </div>
+                        <div v-else class="inline-block bg-emerald-600 text-white px-6 py-2.5 rounded-full font-bold text-sm md:text-lg shadow-md">
+                            <i class="fas fa-check-circle mr-2"></i> AMAN: Hari Ini Bukan Hari Nahas
+                        </div>
+                        
+                        <p v-if="isTodayBangas" class="mt-4 text-xs md:text-sm text-red-600 font-medium max-w-2xl mx-auto">
+                            Menurut perhitungan Jawa, disarankan untuk lebih berhati-hati<template v-if="bangasReason.includes('Nogo')">, menghindari perjalanan jauh (khususnya arah {{ getBangasDirection(todayJavanese.monthNum) }})</template>, atau menunda acara penting/hajatan pada hari ini.
+                        </p>
+
+                        <!-- Info Pangkreman -->
+                        <div class="mt-6 pt-4 border-t border-gray-200/60 flex flex-col items-center">
+                            <span class="bg-gray-800 text-white text-[10px] md:text-xs px-3 py-1 rounded-full mb-2 uppercase tracking-widest font-bold">Info Pangkreman Tahun Ini</span>
+                            <p class="text-xs md:text-sm text-gray-700 font-medium">1 Suro pada tahun ini jatuh pada hari: <strong class="text-indigo-700 text-sm md:text-base">{{ todayJavanese.suro1 }}</strong></p>
+                            <p class="text-[10px] md:text-xs text-gray-500 mt-1 max-w-lg">Berdasarkan aturan, setiap hari pasaran <strong>{{ todayJavanese.suro1 }}</strong> di tahun ini ditetapkan sebagai hari Pangkreman (Nahas).</p>
+                        </div>
                     </div>
+
+                    <!-- Tabel Referensi -->
+                    <h3 class="font-bold text-gray-800 text-base md:text-lg mb-3">Tabel Referensi Hari Bangas & Arah Nogo Tahun</h3>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                        <table class="w-full text-left border-collapse text-xs md:text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-gray-800 text-white border-b">
+                                    <th class="p-3 font-semibold">Bulan Jawa (Hijriah)</th>
+                                    <th class="p-3 font-semibold text-center">Arah Nogo Tahun</th>
+                                    <th class="p-3 font-semibold">Jatuh Pada Hari Pasaran</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b bg-blue-50/40 hover:bg-blue-50 transition">
+                                    <td class="p-3 font-medium text-gray-700">Suro, Sapar, Mulud</td>
+                                    <td class="p-3 text-center font-bold text-blue-700">WETAN (Timur)</td>
+                                    <td class="p-3 font-bold text-gray-800">Sabtu Legi, Minggu Legi</td>
+                                </tr>
+                                <tr class="border-b bg-pink-50/40 hover:bg-pink-50 transition">
+                                    <td class="p-3 font-medium text-gray-700">Ba'da Mulud, Jumadil Awal, Jumadil Akhir</td>
+                                    <td class="p-3 text-center font-bold text-pink-700">KIDUL (Selatan)</td>
+                                    <td class="p-3 font-bold text-gray-800">Senin Pahing, Selasa Pahing</td>
+                                </tr>
+                                <tr class="border-b bg-purple-50/40 hover:bg-purple-50 transition">
+                                    <td class="p-3 font-medium text-gray-700">Rejeb, Ruwah, Poso</td>
+                                    <td class="p-3 text-center font-bold text-purple-700">KULON (Barat)</td>
+                                    <td class="p-3 font-bold text-gray-800">Rabu Pon, Kamis Pon</td>
+                                </tr>
+                                <tr class="border-b bg-cyan-50/40 hover:bg-cyan-50 transition">
+                                    <td class="p-3 font-medium text-gray-700">Sawal, Selo, Besar</td>
+                                    <td class="p-3 text-center font-bold text-cyan-700">LOR (Utara)</td>
+                                    <td class="p-3 font-bold text-gray-800">Jum'at Wage</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-[10px] md:text-xs text-gray-500 mt-4 italic">* Catatan: Pangkreman jatuh pada hari pasaran setiap tanggal 1 Suro.</p>
                 </div>
             </transition>
 
@@ -689,6 +747,46 @@
             </div>
         </div>
 
+        <!-- MODAL: TAMBAH ACARA -->
+        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
+                    <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                
+                <form @submit.prevent="saveAcara" class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
+                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
+                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
+                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <option>Foto (Folder)</option>
+                                <option>Video</option>
+                                <option>Dokumen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Google Drive *</label>
+                        <input required v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md">Simpan Acara</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah) -->
@@ -702,9 +800,11 @@
                         <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <i class="fas fa-user text-xl md:text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
+                    <!-- Ikon Kosong Berbeda Warna berdasarkan L/P -->
                     <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                 </div>
 
+                <!-- TAMPILAN NAMA LENGKAP -->
                 <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight mb-0.5 md:mb-1 px-1 break-words whitespace-normal">{{ node.namaLengkap }}</h3>
                 
                 <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[9px] md:text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[8px] md:text-[10px]"></i> {{ node.namaPasangan }}</p>
@@ -751,6 +851,13 @@
                     
                     // State untuk Fitur Zoom Pohon
                     treeZoom: 1,
+
+                    // Javanese Calendar & Hari Bangas State
+                    todayJavanese: {
+                        day: '', pasaran: '', monthNum: 1, monthName: '', fullString: '', suro1: ''
+                    },
+                    isTodayBangas: false,
+                    bangasReason: '',
 
                     customDialog: {
                         show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
@@ -906,9 +1013,10 @@
             mounted() {
                 this.loadFromSheet();
                 setTimeout(() => { this.renderCharts(); }, 500);
+                this.calculateTodayJavanese();
             },
             methods: {
-                // EXPORT PDF HTML2PDF
+                // EXPORT PDF HTML2PDF (DIPERBAIKI UNTUK LANDSCAPE)
                 downloadPDF(elementId, filename) {
                     const element = document.getElementById(elementId);
                     if (!element) return;
@@ -921,12 +1029,13 @@
 
                     this.showAlert('Memproses PDF', 'Mohon tunggu sebentar, dokumen PDF sedang dibuat...', 'info');
 
+                    // Set landscape and use windowWidth trick to prevent cutoffs
                     const opt = {
                         margin:       [10, 10, 10, 10],
                         filename:     filename,
                         image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#f9fafb' },
-                        jsPDF:        { unit: 'mm', format: 'a4', orientation: elementId === 'tree-content' ? 'landscape' : 'portrait' }
+                        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#f9fafb', windowWidth: element.scrollWidth },
+                        jsPDF:        { unit: 'mm', format: 'a3', orientation: elementId === 'tree-content' ? 'landscape' : 'portrait' }
                     };
 
                     html2pdf().set(opt).from(element).save().then(() => {
@@ -969,6 +1078,103 @@
                     const dateFormatted = d.toLocaleDateString('id-ID', options);
 
                     return `${dayName} ${pasaranName}, ${dateFormatted}`;
+                },
+
+                // FUNGSI CEK HARI BANGAS HARI INI
+                calculateTodayJavanese() {
+                    const d = new Date();
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                    const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+                    const wuku = ['Suro', 'Sapar', 'Mulud', 'Ba\'da Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Poso', 'Sawal', 'Selo', 'Besar'];
+
+                    const epoch = new Date("1970-01-01T00:00:00Z");
+                    const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                    const diffTime = targetDate.getTime() - epoch.getTime();
+                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    let pasaranIndex = (diffDays + 3) % 5;
+                    if (pasaranIndex < 0) pasaranIndex += 5;
+
+                    const dayName = days[d.getDay()];
+                    const pasaranName = pasaran[pasaranIndex];
+
+                    // Dapatkan Bulan Hijriah (Mendekati Jawa) dari API Bawaan Browser
+                    let islamicMonthStr = new Intl.DateTimeFormat('en-US-u-ca-islamic', {month: 'numeric'}).format(d);
+                    let islamicMonthNum = parseInt(islamicMonthStr.replace(/[^0-9]/g, ''));
+                    if(isNaN(islamicMonthNum)) islamicMonthNum = 1;
+
+                    const javaneseMonthName = wuku[islamicMonthNum - 1];
+
+                    // Mencari Hari Pasaran 1 Suro di Tahun Ini
+                    let tempDate = new Date();
+                    let formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic', { month: 'numeric', day: 'numeric' });
+                    for (let i = 0; i < 380; i++) {
+                        let parts = formatter.formatToParts(tempDate);
+                        let m = parts.find(p => p.type === 'month')?.value;
+                        let dVal = parts.find(p => p.type === 'day')?.value;
+                        if (parseInt(m) === 1 && parseInt(dVal) === 1) {
+                            break;
+                        }
+                        tempDate.setDate(tempDate.getDate() - 1);
+                    }
+
+                    this.todayJavanese = {
+                        day: dayName,
+                        pasaran: pasaranName,
+                        monthNum: islamicMonthNum,
+                        monthName: javaneseMonthName,
+                        fullString: `${dayName} ${pasaranName}, Bulan ${javaneseMonthName}`,
+                        suro1: this.getJavaneseDayPasaranOnly(tempDate)
+                    };
+
+                    this.checkBangasLogic();
+                },
+
+                getJavaneseDayPasaranOnly(d) {
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                    const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+
+                    const epoch = new Date("1970-01-01T00:00:00Z");
+                    const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                    const diffTime = targetDate.getTime() - epoch.getTime();
+                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    let pasaranIndex = (diffDays + 3) % 5;
+                    if (pasaranIndex < 0) pasaranIndex += 5;
+
+                    return `${days[d.getDay()]} ${pasaran[pasaranIndex]}`;
+                },
+
+                checkBangasLogic() {
+                    const month = this.todayJavanese.monthNum;
+                    const dayPasaran = `${this.todayJavanese.day} ${this.todayJavanese.pasaran}`;
+
+                    this.isTodayBangas = false;
+                    let reasons = [];
+
+                    // Cek Hari Bangas (Nogo Tahun)
+                    if ([1, 2, 3].includes(month) && (dayPasaran === "Sabtu Legi" || dayPasaran === "Minggu Legi")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ([4, 5, 6].includes(month) && (dayPasaran === "Senin Pahing" || dayPasaran === "Selasa Pahing")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ([7, 8, 9].includes(month) && (dayPasaran === "Rabu Pon" || dayPasaran === "Kamis Pon")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ([10, 11, 12].includes(month) && dayPasaran === "Jum'at Wage") { reasons.push("Hari Bangas (Nogo Tahun)"); }
+
+                    // Cek Pangkreman
+                    if (this.todayJavanese.suro1 && dayPasaran === this.todayJavanese.suro1) {
+                        reasons.push("Hari Pangkreman");
+                    }
+
+                    if (reasons.length > 0) {
+                        this.isTodayBangas = true;
+                        this.bangasReason = reasons.join(" & ");
+                    } else {
+                        this.bangasReason = "";
+                    }
+                },
+
+                getBangasDirection(month) {
+                    if ([1, 2, 3].includes(month)) return "WETAN (Timur)";
+                    if ([4, 5, 6].includes(month)) return "KIDUL (Selatan)";
+                    if ([7, 8, 9].includes(month)) return "KULON (Barat)";
+                    if ([10, 11, 12].includes(month)) return "LOR (Utara)";
+                    return "";
                 },
 
                 // FUNGSI ZOOM POHON SILSILAH
@@ -1162,12 +1368,14 @@
                             // Update UI langsung
                             this.familyData.push({ ...this.formMember });
                         } else {
+                            // Update UI langsung
                             const index = this.familyData.findIndex(item => item.id === this.formMember.id);
                             if (index !== -1) {
                                 this.familyData.splice(index, 1, { ...this.formMember });
                             }
                         }
 
+                        // Kirim data ke Apps Script secara fire-and-forget
                         if (this.appScriptUrl) {
                             const payload = { action: this.formMode, data: this.formMember };
                             fetch(this.appScriptUrl, {
