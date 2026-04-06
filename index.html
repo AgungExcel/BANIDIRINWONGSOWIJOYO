@@ -771,8 +771,9 @@
                     
                     const roots = validData.filter(item => {
                         const pid = item.parentId ? String(item.parentId).trim() : "";
-                        // LOGIKA ANTI-ERROR: Jadikan root jika tidak punya parent, parentnya strip (-), atau parentnya tidak terdaftar di sistem
-                        return pid === "" || pid === "-" || !allIds.has(pid);
+                        const myId = item.id ? String(item.id).trim() : "";
+                        // LOGIKA ANTI-ERROR: Jadikan root jika tidak punya parent, parentnya strip (-), parent = dirinya sendiri, atau parentnya tidak terdaftar di sistem
+                        return pid === "" || pid === "-" || pid === myId || !allIds.has(pid);
                     });
 
                     const buildTreeFromNodes = (nodes, visited = new Set()) => {
@@ -784,9 +785,12 @@
                             visited.add(nodeId);
 
                             const children = validData.filter(child => {
-                                if (!node.id) return false;
+                                if (!child.id || !node.id) return false;
                                 const childPid = child.parentId ? String(child.parentId).trim() : "";
-                                return childPid !== "" && childPid !== "-" && childPid === String(node.id).trim();
+                                const childId = child.id ? String(child.id).trim() : "";
+                                const parentNodeId = String(node.id).trim();
+                                
+                                return childPid !== "" && childPid !== "-" && childPid === parentNodeId && childPid !== childId;
                             });
                             
                             return {
@@ -1038,12 +1042,20 @@
                     try {
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
+                            // Update UI segera
+                            this.familyData.push({ ...this.formMember });
+                        } else {
+                            // Update UI segera
+                            const index = this.familyData.findIndex(item => item.id === this.formMember.id);
+                            if (index !== -1) {
+                                this.familyData.splice(index, 1, { ...this.formMember });
+                            }
                         }
-                        
-                        // Menggunakan plain fetch karena mode no-cors menyembunyikan status Response
+
+                        // Kirim data ke Apps Script secara fire-and-forget
                         if (this.appScriptUrl) {
                             const payload = { action: this.formMode, data: this.formMember };
-                            await fetch(this.appScriptUrl, {
+                            fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
@@ -1051,21 +1063,18 @@
                             });
                         }
                         
-                        this.showAlert('Berhasil Mengirim Data', 'Aplikasi sedang memperbarui Server dan menyinkronkan ulang data... Tunggu sekitar 5 detik untuk melihat hasilnya di Pohon Silsilah.', 'info');
+                        this.showAlert('Disimpan', 'Aplikasi sedang memperbarui Data di Server dan akan tersinkronisasi dalam 5 detik secara otomatis.', 'success');
                         this.isFormOpen = false;
 
-                        // Jeda 5 detik agar Google Drive & Sheet memproses foto secara sempurna
+                        // Jeda agar Google Drive & Sheet memproses foto, lalu sinkronisasi ulang
                         if(this.appScriptUrl){
                             setTimeout(() => {
                                 this.loadFromSheet();
-                                this.customDialog.show = false;
                             }, 5000);
-                        } else {
-                            this.loadFromSheet();
                         }
 
                     } catch(err) {
-                        this.showAlert('Perhatian', "Gagal menghubungi server Google Apps Script Anda.", 'warning');
+                        this.showAlert('Perhatian', "Terjadi kesalahan internal. Namun data berhasil disimpan ke layar saat ini.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
@@ -1075,24 +1084,23 @@
                     this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", async () => {
                         if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
                             try {
-                                await fetch(this.appScriptUrl, {
+                                fetch(this.appScriptUrl, {
                                     method: 'POST',
                                     mode: 'no-cors',
                                     headers: { 'Content-Type': 'text/plain' },
                                     body: JSON.stringify({ action: 'delete', id: member.id })
                                 });
-                                this.showAlert('Menghapus Data...', "Perintah hapus telah dikirim. Memuat ulang sistem dalam beberapa detik...", 'info');
+                                this.showAlert('Menghapus Data', "Perintah hapus telah dikirim. Memuat ulang sistem dalam beberapa detik...", 'info');
                                 setTimeout(() => {
                                     this.loadFromSheet();
-                                    this.customDialog.show = false;
-                                }, 4000);
+                                }, 3000);
                             } catch(e) {
                                 console.error(e);
                             }
-                        } else {
-                            // Jika hanya data lokal / bawaan yang mau dihapus dari tampilan (Temporary)
-                            this.familyData = this.familyData.filter(m => m.id !== member.id);
                         }
+                        
+                        // Menghapus langsung dari tampilan layar
+                        this.familyData = this.familyData.filter(m => m.id !== member.id);
                     });
                 },
 
@@ -1145,8 +1153,8 @@
                     this.isRefreshing = true;
                     this.sheetStatus = "Mengambil data...";
                     
-                    // Bypass cache mutlak dengan Math.random() untuk memastikan real-time 100%
-                    const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'bypass=' + Math.random();
+                    // Bypass cache mutlak dengan waktu dan angka acak agar selalu baru
+                    const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'bypass=' + new Date().getTime();
                     
                     Papa.parse(fetchUrl, {
                         download: true,
@@ -1154,30 +1162,34 @@
                         complete: (results) => {
                             this.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
-                                // NORMALISASI DATA OTOMATIS: Semua header Spreadsheet akan diconvert huruf kecil otomatis.
+                                
+                                // NORMALISASI DATA OTOMATIS: Anti-Error huruf kapital & karakter khusus di Google Sheet
                                 const normalizedData = results.data.map(row => {
                                     const normRow = {};
                                     for (const key in row) {
                                         if (key) {
-                                            const lowerKey = key.trim().toLowerCase();
-                                            if (lowerKey === 'id') normRow.id = row[key];
-                                            else if (lowerKey === 'namalengkap') normRow.namaLengkap = row[key];
-                                            else if (lowerKey === 'panggilan') normRow.panggilan = row[key];
-                                            else if (lowerKey === 'jk') normRow.jk = row[key];
-                                            else if (lowerKey === 'tempatlahir') normRow.tempatLahir = row[key];
-                                            else if (lowerKey === 'tgllahir') normRow.tglLahir = row[key];
-                                            else if (lowerKey === 'statuskehidupan') normRow.statusKehidupan = row[key];
-                                            else if (lowerKey === 'tglwafat') normRow.tglWafat = row[key];
-                                            else if (lowerKey === 'makam') normRow.makam = row[key];
-                                            else if (lowerKey === 'namaayah') normRow.namaAyah = row[key];
-                                            else if (lowerKey === 'namaibu') normRow.namaIbu = row[key];
-                                            else if (lowerKey === 'statuspernikahan') normRow.statusPernikahan = row[key];
-                                            else if (lowerKey === 'namapasangan') normRow.namaPasangan = row[key];
-                                            else if (lowerKey === 'alamat') normRow.alamat = row[key];
-                                            else if (lowerKey === 'nohp') normRow.noHp = row[key];
-                                            else if (lowerKey === 'statusrelasi') normRow.statusRelasi = row[key];
-                                            else if (lowerKey === 'parentid') normRow.parentId = row[key];
-                                            else if (lowerKey === 'foto') normRow.foto = row[key];
+                                            // Menghapus spasi & simbol dari header, ubah jadi huruf kecil murni
+                                            const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                                            
+                                            if (cleanKey === 'id') normRow.id = row[key];
+                                            else if (cleanKey === 'namalengkap') normRow.namaLengkap = row[key];
+                                            else if (cleanKey === 'panggilan') normRow.panggilan = row[key];
+                                            else if (cleanKey === 'jk') normRow.jk = row[key];
+                                            else if (cleanKey === 'tempatlahir') normRow.tempatLahir = row[key];
+                                            else if (cleanKey === 'tgllahir') normRow.tglLahir = row[key];
+                                            else if (cleanKey === 'statuskehidupan') normRow.statusKehidupan = row[key];
+                                            else if (cleanKey === 'tglwafat') normRow.tglWafat = row[key];
+                                            else if (cleanKey === 'makam') normRow.makam = row[key];
+                                            else if (cleanKey === 'namaayah') normRow.namaAyah = row[key];
+                                            else if (cleanKey === 'namaibu') normRow.namaIbu = row[key];
+                                            else if (cleanKey === 'statuspernikahan') normRow.statusPernikahan = row[key];
+                                            else if (cleanKey === 'namapasangan') normRow.namaPasangan = row[key];
+                                            else if (cleanKey === 'alamat') normRow.alamat = row[key];
+                                            // Tangani noHp atau nohp
+                                            else if (cleanKey === 'nohp') normRow.noHp = row[key];
+                                            else if (cleanKey === 'statusrelasi') normRow.statusRelasi = row[key];
+                                            else if (cleanKey === 'parentid') normRow.parentId = row[key];
+                                            else if (cleanKey === 'foto') normRow.foto = row[key];
                                         }
                                     }
                                     return normRow;
