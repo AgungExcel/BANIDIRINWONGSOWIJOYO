@@ -13,7 +13,6 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="Silsilah Digital - Bani Dirin Wongso Wijoyo">
     <meta property="og:description" content="Aplikasi silsilah keturunan keluarga besar Bani Dirin Wongso Wijoyo.">
-    <!-- Gambar thumbnail saat dibagikan -->
     <meta property="og:image" content="home.png">
 
     <link rel="icon" href="tab.png" type="image/png">
@@ -24,7 +23,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Library untuk Export PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -201,7 +199,6 @@
                             <p class="text-xs md:text-sm text-gray-500">Struktur keturunan hierarki (Terurut berdasarkan Anak Ke-).</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                            <!-- TOMBOL DOWNLOAD PDF LANDSCAPE -->
                             <button @click="downloadPDF('tree-content', 'Pohon_Silsilah_Bani_Dirin.pdf')" class="w-full md:w-auto justify-center bg-blue-100 text-blue-700 px-4 py-2 rounded-lg md:rounded-full hover:bg-blue-200 transition shadow-sm text-sm font-medium flex items-center gap-2">
                                 <i class="fas fa-file-pdf"></i> Download PDF
                             </button>
@@ -211,19 +208,15 @@
                         </div>
                     </div>
                     
-                    <!-- AREA POHON DENGAN FITUR ZOOM & RESPONSIVE -->
                     <div class="relative flex-1 bg-gray-50 rounded-lg border border-gray-100 shadow-inner overflow-hidden flex flex-col h-[500px] md:h-[600px]">
                         
-                        <!-- Panel Zoom -->
                         <div class="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex flex-col gap-1.5 zoom-controls border border-gray-200 p-1.5 rounded-lg shadow-sm">
                             <button @click="zoomIn" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perbesar"><i class="fas fa-search-plus text-sm"></i></button>
                             <button @click="resetZoom" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 font-bold text-[10px] md:text-xs transition" title="Ukuran Asli">100%</button>
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <!-- Kanvas Pohon -->
                         <div class="flex-1 w-full h-full overflow-auto relative">
-                            <!-- ID tree-content akan diexport ke PDF -->
                             <div id="tree-content" class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: `scale(${treeZoom})` }">
                                 <div class="tree" v-if="treeData.length > 0">
                                     <ul>
@@ -263,7 +256,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabel Data Responsif -->
                     <div class="overflow-x-auto rounded-lg border border-gray-200">
                         <table class="w-full text-left border-collapse text-xs md:text-sm min-w-max">
                             <thead>
@@ -341,7 +333,6 @@
                                 </div>
                                 <p class="text-gray-500 text-xs md:text-sm mb-3"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
                                 
-                                <!-- TAMPILAN FOTO ACARA (MAX 5) -->
                                 <div v-if="acara.fotos && acara.fotos.length > 0" class="flex gap-2 overflow-x-auto py-2 mb-2 scrollbar-hide">
                                     <img v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover rounded-md border border-gray-200 shadow-sm flex-shrink-0">
                                 </div>
@@ -392,7 +383,6 @@
                         <p class="text-sm text-gray-500">Sistem otomatis mengecek apakah hari ini adalah Hari Bangas atau Pangkreman berdasarkan Kalender Jawa.</p>
                     </div>
 
-                    <!-- Banner Status Hari Ini -->
                     <div class="mb-6 p-6 rounded-xl text-center border-2 transition-colors" :class="isTodayBangas ? 'bg-red-50 border-red-500' : 'bg-emerald-50 border-emerald-500'">
                         <p class="text-gray-600 text-xs md:text-sm mb-1 font-medium">Status Hari Ini ({{ new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}):</p>
                         <h3 class="text-xl md:text-3xl font-bold mb-4" :class="isTodayBangas ? 'text-red-700' : 'text-emerald-700'">{{ todayJavanese.fullString }}</h3>
@@ -408,7 +398,6 @@
                             Menurut perhitungan Jawa, disarankan untuk lebih berhati-hati<template v-if="bangasReason.includes('Nogo')">, menghindari perjalanan jauh (khususnya arah {{ getBangasDirection(todayJavanese.monthNum) }})</template>, atau menunda acara penting/hajatan pada hari ini.
                         </p>
 
-                        <!-- Info Pangkreman -->
                         <div class="mt-6 pt-4 border-t border-gray-200/60 flex flex-col items-center">
                             <span class="bg-gray-800 text-white text-[10px] md:text-xs px-3 py-1 rounded-full mb-2 uppercase tracking-widest font-bold">Info Pangkreman Tahun Ini</span>
                             <p class="text-xs md:text-sm text-gray-700 font-medium">1 Suro pada tahun ini jatuh pada hari: <strong class="text-indigo-700 text-sm md:text-base">{{ todayJavanese.suro1 }}</strong></p>
@@ -416,7 +405,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabel Referensi -->
                     <h3 class="font-bold text-gray-800 text-base md:text-lg mb-3">Tabel Referensi Hari Bangas & Arah Nogo Tahun</h3>
                     <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
                         <table class="w-full text-left border-collapse text-xs md:text-sm whitespace-nowrap">
@@ -597,6 +585,235 @@
             </div>
         </div>
 
+        <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
+        <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-2 md:p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
+            <div class="bg-[#f3f4f6] rounded-xl md:rounded-2xl shadow-2xl w-full max-w-4xl my-4 md:my-6 overflow-hidden">
+                <div class="bg-white px-4 md:px-8 py-4 md:py-5 flex items-center border-b border-gray-200">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-lg md:text-xl mr-3 md:mr-4">
+                        <i :class="formMode === 'add' ? 'fas fa-user-plus' : 'fas fa-user-edit'"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800">{{ formMode === 'add' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
+                        <p class="text-xs md:text-sm text-gray-500">Lengkapi atau ubah data silsilah di bawah ini</p>
+                    </div>
+                    <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl md:text-2xl transition px-2">&times;</button>
+                </div>
+                
+                <form @submit.prevent="saveMember" class="p-4 md:p-8 pt-3 md:pt-4 space-y-4 md:space-y-6">
+                    <!-- KARTU 1: INFORMASI DASAR -->
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
+                            <i class="fas fa-id-card"></i> INFORMASI DASAR
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Lengkap *</label>
+                                <input required v-model="formMember.namaLengkap" type="text" placeholder="Masukkan nama" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Panggilan</label>
+                                <input v-model="formMember.panggilan" type="text" placeholder="Nama sehari-hari" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin *</label>
+                                <select required v-model="formMember.jk" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option value="" disabled>Pilih Gender...</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Keluarga *</label>
+                                <select required v-model="formMember.statusRelasi" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option value="" disabled>Pilih Status...</option>
+                                    <option>Leluhur Utama</option>
+                                    <option>Garis Keturunan</option>
+                                    <option>Anak</option>
+                                    <option>Cucu</option>
+                                    <option>Cicit</option>
+                                    <option>Menantu</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 2: KELAHIRAN & KEHIDUPAN -->
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
+                            <i class="far fa-calendar-alt"></i> KELAHIRAN & KEHIDUPAN
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tempat Lahir</label>
+                                <input v-model="formMember.tempatLahir" type="text" placeholder="Kota/Kabupaten" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
+                                <input v-model="formMember.tglLahir" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Kehidupan</label>
+                                <select v-model="formMember.statusKehidupan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option>Hidup</option>
+                                    <option>Wafat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-if="formMember.statusKehidupan === 'Wafat'" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mt-4 pt-4 md:mt-5 md:pt-5 border-t border-gray-100">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Wafat</label>
+                                <input v-model="formMember.tglWafat" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Lokasi Makam</label>
+                                <input v-model="formMember.makam" type="text" placeholder="Tulis nama/lokasi makam" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 3: GARIS SILSILAH & PERNIKAHAN -->
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
+                            <i class="fas fa-sitemap"></i> GARIS SILSILAH & PERNIKAHAN
+                        </h4>
+                        <div class="mb-4 md:mb-5">
+                            <label class="block text-[11px] md:text-xs font-bold text-emerald-700 mb-1">Hubungkan ke Pohon: Induk Utama *</label>
+                            <select required v-model="formMember.parentId" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-800 font-medium">
+                                <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
+                                <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ayah Kandung</label>
+                                <input v-model="formMember.namaAyah" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ibu Kandung</label>
+                                <input v-model="formMember.namaIbu" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
+                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Urutan Kelahiran (Anak Ke-)</label>
+                            <input v-model="formMember.urutanAnak" type="number" placeholder="Contoh: 1, 2, 3..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <p class="text-[9px] md:text-[10px] text-gray-500 mt-1">Mengurutkan posisi anak dari kiri ke kanan di Pohon Silsilah.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 border-t border-gray-100 pt-4 md:pt-5">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Pernikahan</label>
+                                <select v-model="formMember.statusPernikahan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
+                                    <option>Belum Menikah</option>
+                                    <option>Menikah</option>
+                                    <option>Cerai Hidup</option>
+                                    <option>Cerai Mati</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Pasangan</label>
+                                <input v-model="formMember.namaPasangan" type="text" placeholder="Tulis nama suami/istri" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 4: KONTAK PRIBADI & FOTO -->
+                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
+                            <i class="fas fa-phone-alt"></i> KONTAK PRIBADI & FOTO
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5">
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nomor HP / WhatsApp</label>
+                                <div class="relative">
+                                    <i class="fab fa-whatsapp absolute left-3 top-2.5 md:top-3 text-green-500 text-sm md:text-base"></i>
+                                    <input v-model="formMember.noHp" type="text" placeholder="08123456789" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 pl-8 md:pl-9 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <div class="flex items-center gap-2 md:gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
+                                        <template v-if="formMember.foto">
+                                            <img :src="getSafeImageUrl(formMember.foto)" class="w-full h-full object-cover">
+                                        </template>
+                                        <i v-else class="fas fa-user text-sm md:text-base" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
+                                    </div>
+                                    <input type="file" accept="image/*" @change="handleMemberFotoUpload" class="w-full border border-gray-300 rounded-md p-1 md:p-1.5 text-[10px] md:text-sm file:mr-2 md:file:mr-4 file:py-1 file:px-2 md:file:px-4 file:rounded file:border-0 file:text-[10px] md:file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Alamat Terakhir / Domisili</label>
+                            <textarea v-model="formMember.alamat" rows="2" placeholder="Tulis alamat lengkap..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-y"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Footer / Submit Button -->
+                    <div class="bg-white p-3 md:p-4 rounded-lg md:rounded-xl shadow-sm border border-gray-200">
+                        <button type="submit" :disabled="isSaving" class="w-full py-2.5 md:py-3.5 bg-[#12b981] hover:bg-[#059669] text-white font-bold rounded-lg transition shadow flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm md:text-base">
+                            <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
+                            <i v-else class="fas fa-cloud-upload-alt"></i> 
+                            {{ isSaving ? 'Menyimpan ke Server...' : 'Simpan Data Anggota' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: TAMBAH ACARA DENGAN UPLOAD FOTO -->
+        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+                <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
+                    <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                
+                <form @submit.prevent="saveAcara" class="p-6 space-y-4 md:space-y-5 max-h-[80vh] overflow-y-auto">
+                    <div>
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
+                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
+                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
+                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <option>Foto / Galeri</option>
+                                <option>Video</option>
+                                <option>Dokumen</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4 mt-2">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Upload Foto Acara Langsung (Maks 5 Foto)</label>
+                        <input type="file" multiple accept="image/*" @change="handleAcaraFotoUpload" class="w-full border border-gray-300 rounded-lg p-1.5 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                        <p class="text-[10px] md:text-xs text-gray-500 mt-1">Foto akan dikompresi otomatis agar aplikasi tidak berat.</p>
+                        
+                        <div v-if="formAcara.fotos.length > 0" class="flex gap-2 overflow-x-auto mt-3 pb-2 scrollbar-hide">
+                            <div v-for="(f, idx) in formAcara.fotos" :key="idx" class="relative group">
+                                <img :src="f" class="w-14 h-14 object-cover rounded-md border border-gray-200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Atau Gunakan Link Google Drive (Untuk Video / Album Besar)</label>
+                        <input v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition text-sm">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md text-sm">Simpan Acara</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah) -->
@@ -607,13 +824,12 @@
                 
                 <div class="w-10 h-10 md:w-14 md:h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-1.5 md:mb-2 mt-1 md:mt-2">
                     <template v-if="node && node.foto">
-                        <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <img :src="getSafeImg(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <i class="fas fa-user text-xl md:text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
                     <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                 </div>
 
-                <!-- TAMPILAN NAMA LENGKAP -->
                 <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight mb-0.5 md:mb-1 px-1 break-words whitespace-normal">{{ node.namaLengkap }}</h3>
                 
                 <p v-if="node.namaPasangan && node.namaPasangan !== '-'" class="text-[9px] md:text-[11px] text-gray-500 mt-1 border-t pt-1 leading-tight"><i class="fas fa-heart text-red-400 text-[8px] md:text-[10px]"></i> {{ node.namaPasangan }}</p>
@@ -622,7 +838,6 @@
                 </span>
             </div>
 
-            <!-- Rekursif Anak-anaknya -->
             <ul v-if="node.children && node.children.length > 0">
                 <org-node v-for="(child, index) in node.children" :key="child && child.id ? child.id : index" :node="child" @show-detail="$emit('show-detail', $event)"></org-node>
             </ul>
@@ -630,6 +845,22 @@
     </script>
 
     <script>
+        // FUNGSI PENYIMPANAN AMAN (Mencegah Crash jika LocalStorage diblokir HP)
+        function safeGetStorage(key, defaultVal) {
+            try {
+                var val = localStorage.getItem(key);
+                return val !== null ? val : defaultVal;
+            } catch(e) {
+                return defaultVal;
+            }
+        }
+
+        function safeSetStorage(key, val) {
+            try {
+                localStorage.setItem(key, val);
+            } catch(e) {}
+        }
+
         const { createApp } = Vue;
 
         let genderChartInstance = null;
@@ -639,15 +870,21 @@
 
         const app = createApp({
             data() {
+                let savedAcara = [];
+                try {
+                    let raw = safeGetStorage('silsilah_acara', '');
+                    if(raw) savedAcara = JSON.parse(raw);
+                } catch(e) {}
+
                 return {
                     activeTab: 'home',
                     searchQuery: '',
                     homeSearchQuery: '',
                     mainPhoto: 'home.png', 
                     familyData: [],
-                    acaraData: [],
+                    acaraData: savedAcara,
                     
-                    quoteText: localStorage.getItem('silsilah_quote') || "Keluarga adalah harta yang paling berharga dan tak ternilai harganya.",
+                    quoteText: safeGetStorage('silsilah_quote', "Keluarga adalah harta yang paling berharga dan tak ternilai harganya."),
                     isEditingQuote: false,
 
                     selectedMember: null,
@@ -670,15 +907,14 @@
                         show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
                     },
                     
-                    sheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
-                    tempSheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
+                    sheetUrl: safeGetStorage('silsilah_csv_url', 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv'),
+                    tempSheetUrl: safeGetStorage('silsilah_csv_url', 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv'),
                     
-                    // URL BARU UNTUK SHEET ACARA
-                    sheetAcaraUrl: localStorage.getItem('silsilah_csv_acara_url') || '',
-                    tempSheetAcaraUrl: localStorage.getItem('silsilah_csv_acara_url') || '',
+                    sheetAcaraUrl: safeGetStorage('silsilah_csv_acara_url', ''),
+                    tempSheetAcaraUrl: safeGetStorage('silsilah_csv_acara_url', ''),
                     
-                    appScriptUrl: localStorage.getItem('silsilah_gas_url') || 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
-                    tempAppScriptUrl: localStorage.getItem('silsilah_gas_url') || 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
+                    appScriptUrl: safeGetStorage('silsilah_gas_url', 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec'),
+                    tempAppScriptUrl: safeGetStorage('silsilah_gas_url', 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec'),
 
                     sheetStatus: '',
                     isRefreshing: false,
@@ -694,35 +930,35 @@
             },
             computed: {
                 filteredData() {
-                    const validData = this.familyData.filter(d => d && typeof d === 'object');
+                    const validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
                     if (!this.searchQuery) return validData;
                     const q = this.searchQuery.toLowerCase();
-                    return validData.filter(d => 
-                        (d.namaLengkap && d.namaLengkap.toLowerCase().includes(q)) || 
-                        (d.panggilan && d.panggilan.toLowerCase().includes(q))
-                    );
+                    return validData.filter(function(d) {
+                        return (d.namaLengkap && d.namaLengkap.toLowerCase().includes(q)) || 
+                               (d.panggilan && d.panggilan.toLowerCase().includes(q));
+                    });
                 },
                 treeData() {
                     if (!this.familyData || this.familyData.length === 0) return [];
 
-                    const validData = this.familyData.filter(d => d && typeof d === 'object');
-                    const allIds = new Set(validData.filter(d => d.id).map(d => String(d.id).trim()));
+                    const validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
+                    const allIds = new Set(validData.filter(function(d) { return d.id }).map(function(d) { return String(d.id).trim() }));
                     
-                    const roots = validData.filter(item => {
+                    const roots = validData.filter(function(item) {
                         const pid = item.parentId ? String(item.parentId).trim() : "";
                         const myId = item.id ? String(item.id).trim() : "";
                         return pid === "" || pid === "-" || pid === myId || !allIds.has(pid);
                     });
 
-                    const buildTreeFromNodes = (nodes, visited = new Set()) => {
-                        return nodes.map(node => {
+                    const buildTreeFromNodes = function(nodes, visited) {
+                        return nodes.map(function(node) {
                             if (!node) return null;
                             
                             const nodeId = node.id ? String(node.id).trim() : Math.random().toString();
                             if (visited.has(nodeId)) return null;
                             visited.add(nodeId);
 
-                            const children = validData.filter(child => {
+                            const children = validData.filter(function(child) {
                                 if (!child.id || !node.id) return false;
                                 const childPid = child.parentId ? String(child.parentId).trim() : "";
                                 const childId = child.id ? String(child.id).trim() : "";
@@ -731,20 +967,19 @@
                                 return childPid !== "" && childPid !== "-" && childPid === parentNodeId && childPid !== childId;
                             });
                             
-                            children.sort((a, b) => {
+                            children.sort(function(a, b) {
                                 const numA = parseInt(a.urutanAnak) || 999;
                                 const numB = parseInt(b.urutanAnak) || 999;
                                 return numA - numB;
                             });
                             
-                            return {
-                                ...node,
+                            return Object.assign({}, node, {
                                 children: buildTreeFromNodes(children, new Set(visited))
-                            };
+                            });
                         }).filter(Boolean);
                     };
 
-                    return buildTreeFromNodes(roots);
+                    return buildTreeFromNodes(roots, new Set());
                 },
                 memberStats() {
                     if (!this.selectedMember) return null;
@@ -759,21 +994,23 @@
                         this.selectedMember.jk === 'L' ? stats.pasangan.P = 1 : stats.pasangan.L = 1;
                     }
 
-                    const getChildren = (parentId) => this.familyData.filter(d => d && String(d.parentId) === String(parentId));
+                    const getChildren = function(parentId) {
+                        return this.familyData.filter(function(d) { return d && String(d.parentId) === String(parentId) });
+                    }.bind(this);
 
                     const anakArr = getChildren(id);
-                    anakArr.forEach(anak => {
+                    anakArr.forEach(function(anak) {
                         anak.jk === 'L' ? stats.anak.L++ : stats.anak.P++;
                         if (anak.namaPasangan && anak.namaPasangan !== '-') {
                             anak.jk === 'L' ? stats.menantu.P++ : stats.menantu.L++;
                         }
                         
                         const cucuArr = getChildren(anak.id);
-                        cucuArr.forEach(cucu => {
+                        cucuArr.forEach(function(cucu) {
                             cucu.jk === 'L' ? stats.cucu.L++ : stats.cucu.P++;
                             
                             const cicitArr = getChildren(cucu.id);
-                            cicitArr.forEach(cicit => {
+                            cicitArr.forEach(function(cicit) {
                                 cicit.jk === 'L' ? stats.cicit.L++ : stats.cicit.P++;
                             });
                         });
@@ -787,7 +1024,7 @@
                         keturunan: 0, menantu: 0, lainnya: 0
                     };
                     
-                    this.familyData.forEach(member => {
+                    this.familyData.forEach(function(member) {
                         if (!member) return;
                         stats.total++;
                         member.jk === 'L' ? stats.L++ : stats.P++;
@@ -821,12 +1058,19 @@
                 }
             },
             mounted() {
-                this.loadFromSheet();
-                setTimeout(() => { this.renderCharts(); }, 500);
-                this.calculateTodayJavanese();
+                try {
+                    this.loadFromSheet();
+                } catch(e) { console.error(e); }
+                
+                try {
+                    setTimeout(() => { this.renderCharts(); }, 500);
+                } catch(e) { console.error(e); }
+                
+                try {
+                    this.calculateTodayJavanese();
+                } catch(e) { console.error(e); }
             },
             methods: {
-                // TOMBOL SHARE / BAGIKAN
                 shareApp() {
                     const shareData = {
                         title: 'Silsilah Digital - Bani Dirin',
@@ -835,9 +1079,8 @@
                     };
                     
                     if (navigator.share) {
-                        navigator.share(shareData).catch((err) => console.log('Gagal membagikan', err));
+                        navigator.share(shareData).catch(function(err) { console.log('Gagal', err) });
                     } else {
-                        // Fallback jika browser tidak mendukung navigator.share
                         try {
                             const tempInput = document.createElement("input");
                             tempInput.value = window.location.href;
@@ -885,7 +1128,7 @@
                 },
 
                 getJavaneseDate(dateString) {
-                    if (!dateString || dateString === '-') return '-';
+                    if (!dateString || typeof dateString !== 'string' || dateString === '-') return '-';
                     const d = new Date(dateString);
                     if (isNaN(d.getTime())) return dateString;
 
@@ -907,55 +1150,80 @@
                     const pasaranName = pasaran[pasaranIndex];
 
                     const options = { day: 'numeric', month: 'long', year: 'numeric' };
-                    const dateFormatted = d.toLocaleDateString('id-ID', options);
+                    let dateFormatted = dateString;
+                    try {
+                         dateFormatted = d.toLocaleDateString('id-ID', options);
+                    } catch(e){}
 
                     return `${dayName} ${pasaranName}, ${dateFormatted}`;
                 },
 
                 calculateTodayJavanese() {
-                    const d = new Date();
-                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
-                    const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
-                    const wuku = ['Suro', 'Sapar', 'Mulud', 'Ba\'da Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Poso', 'Sawal', 'Selo', 'Besar'];
+                    try {
+                        const d = new Date();
+                        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                        const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+                        const wuku = ['Suro', 'Sapar', 'Mulud', 'Ba\'da Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Poso', 'Sawal', 'Selo', 'Besar'];
 
-                    const epoch = new Date("1970-01-01T00:00:00Z");
-                    const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
-                    const diffTime = targetDate.getTime() - epoch.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                    let pasaranIndex = (diffDays + 3) % 5;
-                    if (pasaranIndex < 0) pasaranIndex += 5;
+                        const epoch = new Date("1970-01-01T00:00:00Z");
+                        const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                        const diffTime = targetDate.getTime() - epoch.getTime();
+                        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                        let pasaranIndex = (diffDays + 3) % 5;
+                        if (pasaranIndex < 0) pasaranIndex += 5;
 
-                    const dayName = days[d.getDay()];
-                    const pasaranName = pasaran[pasaranIndex];
+                        const dayName = days[d.getDay()];
+                        const pasaranName = pasaran[pasaranIndex];
 
-                    let islamicMonthStr = new Intl.DateTimeFormat('en-US-u-ca-islamic', {month: 'numeric'}).format(d);
-                    let islamicMonthNum = parseInt(islamicMonthStr.replace(/[^0-9]/g, ''));
-                    if(isNaN(islamicMonthNum)) islamicMonthNum = 1;
-
-                    const javaneseMonthName = wuku[islamicMonthNum - 1];
-
-                    let tempDate = new Date();
-                    let formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic', { month: 'numeric', day: 'numeric' });
-                    for (let i = 0; i < 380; i++) {
-                        let parts = formatter.formatToParts(tempDate);
-                        let m = parts.find(p => p.type === 'month')?.value;
-                        let dVal = parts.find(p => p.type === 'day')?.value;
-                        if (parseInt(m) === 1 && parseInt(dVal) === 1) {
-                            break;
+                        let islamicMonthNum = 1;
+                        if (window.Intl && typeof Intl.DateTimeFormat === 'function') {
+                            try {
+                                let islamicMonthStr = new Intl.DateTimeFormat('en-US-u-ca-islamic', {month: 'numeric'}).format(d);
+                                islamicMonthNum = parseInt(islamicMonthStr.replace(/[^0-9]/g, ''));
+                                if(isNaN(islamicMonthNum)) islamicMonthNum = 1;
+                            } catch(e) { islamicMonthNum = 1; }
                         }
-                        tempDate.setDate(tempDate.getDate() - 1);
+
+                        const javaneseMonthName = wuku[islamicMonthNum - 1];
+
+                        let tempDate = new Date();
+                        let suro1Str = '';
+                        if (window.Intl && typeof Intl.DateTimeFormat === 'function') {
+                            try {
+                                let formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic', { month: 'numeric', day: 'numeric' });
+                                for (let i = 0; i < 380; i++) {
+                                    let parts = formatter.formatToParts(tempDate);
+                                    let pMonth = null; let pDay = null;
+                                    for(var j=0; j<parts.length; j++){
+                                        if(parts[j].type === 'month') pMonth = parts[j];
+                                        if(parts[j].type === 'day') pDay = parts[j];
+                                    }
+                                    
+                                    let m = pMonth ? pMonth.value : null;
+                                    let dVal = pDay ? pDay.value : null;
+
+                                    if (parseInt(m) === 1 && parseInt(dVal) === 1) {
+                                        suro1Str = this.getJavaneseDayPasaranOnly(tempDate);
+                                        break;
+                                    }
+                                    tempDate.setDate(tempDate.getDate() - 1);
+                                }
+                            } catch(e){}
+                        }
+
+                        this.todayJavanese = {
+                            day: dayName,
+                            pasaran: pasaranName,
+                            monthNum: islamicMonthNum,
+                            monthName: javaneseMonthName,
+                            fullString: `${dayName} ${pasaranName}, Bulan ${javaneseMonthName}`,
+                            suro1: suro1Str
+                        };
+
+                        this.checkBangasLogic();
+                    } catch (e) {
+                        console.error("Error calculating Date", e);
                     }
-
-                    this.todayJavanese = {
-                        day: dayName,
-                        pasaran: pasaranName,
-                        monthNum: islamicMonthNum,
-                        monthName: javaneseMonthName,
-                        fullString: `${dayName} ${pasaranName}, Bulan ${javaneseMonthName}`,
-                        suro1: this.getJavaneseDayPasaranOnly(tempDate)
-                    };
-
-                    this.checkBangasLogic();
                 },
 
                 getJavaneseDayPasaranOnly(d) {
@@ -1015,7 +1283,7 @@
                 },
 
                 getSafeImageUrl(url) {
-                    if (!url) return '';
+                    if (!url || typeof url !== 'string') return '';
                     if (url.startsWith('data:')) return url; 
                     
                     let fileId = '';
@@ -1050,7 +1318,7 @@
                 },
                 toggleQuoteEdit() {
                     if (this.isEditingQuote) {
-                        localStorage.setItem('silsilah_quote', this.quoteText);
+                        safeSetStorage('silsilah_quote', this.quoteText);
                     }
                     this.isEditingQuote = !this.isEditingQuote;
                 },
@@ -1095,12 +1363,12 @@
                     this.selectedMember = member;
                 },
                 calculateAge(tglLahir, tglWafat) {
-                    if (!tglLahir || tglLahir === '-') return '-';
+                    if (!tglLahir || typeof tglLahir !== 'string' || tglLahir === '-') return '-';
                     const birthYear = new Date(tglLahir).getFullYear();
                     if (isNaN(birthYear)) return '-';
                     
                     let endYear = new Date().getFullYear();
-                    if (tglWafat && tglWafat !== '-') {
+                    if (tglWafat && typeof tglWafat === 'string' && tglWafat !== '-') {
                         const deathYear = new Date(tglWafat).getFullYear();
                         if (!isNaN(deathYear)) endYear = deathYear;
                     }
@@ -1109,7 +1377,7 @@
                     return age >= 0 ? `${age} thn` : '-';
                 },
                 formatDateID(dateString) {
-                    if (!dateString || dateString === '-') return '-';
+                    if (!dateString || typeof dateString !== 'string' || dateString === '-') return '-';
                     const options = { day: 'numeric', month: 'long', year: 'numeric' };
                     try {
                         return new Date(dateString).toLocaleDateString('id-ID', options);
@@ -1150,7 +1418,7 @@
                 openForm(mode, member = null) {
                     this.formMode = mode;
                     if (mode === 'edit' && member) {
-                        this.formMember = { ...member }; 
+                        this.formMember = Object.assign({}, member); 
                     } else {
                         this.formMember = {
                             id: '', foto: '', namaLengkap: '', panggilan: '', jk: '', tempatLahir: '', tglLahir: '',
@@ -1187,14 +1455,14 @@
                 },
 
                 handleAcaraFotoUpload(event) {
-                    const files = Array.from(event.target.files);
+                    const files = Array.prototype.slice.call(event.target.files);
                     if (files.length > 5) {
                         this.showAlert('Batas Foto', 'Maksimal 5 foto untuk satu acara agar memori tidak berat. Jika lebih, gunakan Link Google Drive.', 'warning');
                         return;
                     }
                     
                     this.formAcara.fotos = [];
-                    files.slice(0, 5).forEach(file => {
+                    files.slice(0, 5).forEach((file) => {
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             const img = new Image();
@@ -1220,11 +1488,11 @@
                     try {
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
-                            this.familyData.push({ ...this.formMember });
+                            this.familyData.push(Object.assign({}, this.formMember));
                         } else {
-                            const index = this.familyData.findIndex(item => item.id === this.formMember.id);
+                            const index = this.familyData.findIndex((item) => { return item.id === this.formMember.id });
                             if (index !== -1) {
-                                this.familyData.splice(index, 1, { ...this.formMember });
+                                this.familyData.splice(index, 1, Object.assign({}, this.formMember));
                             }
                         }
 
@@ -1235,14 +1503,14 @@
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
-                            }).catch(e => console.error(e));
+                            }).catch(function(e){ console.error(e) });
                         }
                         
-                        this.showAlert('Berhasil Disimpan', 'Data dan foto berhasil diperbarui di tampilan. Sedang mensinkronkan ke server secara diam-diam.', 'success');
+                        this.showAlert('Berhasil Disimpan', 'Data berhasil diperbarui di tampilan. Sedang mensinkronkan ke server secara diam-diam.', 'success');
                         this.isFormOpen = false;
 
                     } catch(err) {
-                        this.showAlert('Perhatian', "Terjadi kesalahan internal. Namun data berhasil disimpan ke layar saat ini.", 'warning');
+                        this.showAlert('Perhatian', "Terjadi kesalahan internal.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
@@ -1250,15 +1518,15 @@
                 },
                 deleteMember(member) {
                     this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", () => {
-                        this.familyData = this.familyData.filter(m => m.id !== member.id);
+                        this.familyData = this.familyData.filter(function(m) { return m.id !== member.id });
 
-                        if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
+                        if(this.appScriptUrl && member.id && !String(member.id).startsWith('TMP_')) {
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify({ action: 'delete', id: String(member.id) })
-                            }).catch(e => console.error(e));
+                            }).catch(function(e) { console.error(e) });
                             
                             this.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
                         }
@@ -1281,10 +1549,8 @@
                 saveAcara() {
                     this.formAcara.id = "ACR_" + Date.now();
                     
-                    // Simpan di tampilan
-                    this.acaraData.push({...this.formAcara});
+                    this.acaraData.push(Object.assign({}, this.formAcara));
 
-                    // Kirim ke Google Apps Script (Ke Sheet 'Acara')
                     if (this.appScriptUrl) {
                         const payload = { action: 'add_acara', data: this.formAcara };
                         fetch(this.appScriptUrl, {
@@ -1292,17 +1558,19 @@
                             mode: 'no-cors',
                             headers: { 'Content-Type': 'text/plain' },
                             body: JSON.stringify(payload)
-                        }).catch(e => console.error(e));
+                        }).catch(function(e) { console.error(e) });
                     }
 
                     this.isAcaraFormOpen = false;
+                    safeSetStorage('silsilah_acara', JSON.stringify(this.acaraData));
                     this.formAcara = { judul: '', tanggal: '', jenis: 'Foto / Galeri', gdriveLink: '', fotos: [] };
                     this.showAlert('Berhasil', 'Acara sedang disinkronisasi ke server!', 'success');
                 },
 
                 deleteAcara(acaraObj) {
                     this.showConfirm('Hapus Acara', "Apakah Anda yakin ingin menghapus album acara ini?", () => {
-                        this.acaraData = this.acaraData.filter(a => a.id !== acaraObj.id);
+                        this.acaraData = this.acaraData.filter(function(a) { return a.id !== acaraObj.id });
+                        safeSetStorage('silsilah_acara', JSON.stringify(this.acaraData));
                         
                         if(this.appScriptUrl && acaraObj.id) {
                             fetch(this.appScriptUrl, {
@@ -1310,16 +1578,16 @@
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify({ action: 'delete_acara', id: String(acaraObj.id) })
-                            }).catch(e => console.error(e));
+                            }).catch(function(e){ console.error(e) });
                         }
                         this.showAlert('Terhapus', 'Acara telah dihapus.', 'info');
                     });
                 },
 
                 saveSettings() {
-                    localStorage.setItem('silsilah_gas_url', this.tempAppScriptUrl);
-                    localStorage.setItem('silsilah_csv_url', this.tempSheetUrl);
-                    localStorage.setItem('silsilah_csv_acara_url', this.tempSheetAcaraUrl);
+                    safeSetStorage('silsilah_gas_url', this.tempAppScriptUrl);
+                    safeSetStorage('silsilah_csv_url', this.tempSheetUrl);
+                    safeSetStorage('silsilah_csv_acara_url', this.tempSheetAcaraUrl);
                     this.appScriptUrl = this.tempAppScriptUrl;
                     this.sheetUrl = this.tempSheetUrl;
                     this.sheetAcaraUrl = this.tempSheetAcaraUrl;
@@ -1348,7 +1616,8 @@
                             this.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
                                 
-                                const normalizedData = results.data.map(row => {
+                                const validRawData = results.data.filter(function(row) { return row && typeof row === 'object' });
+                                const normalizedData = validRawData.map(row => {
                                     const normRow = {};
                                     for (const key in row) {
                                         if (key) {
@@ -1378,24 +1647,24 @@
                                     return normRow;
                                 });
 
-                                const validData = normalizedData.filter(row => row && typeof row === 'object' && (row.id || row.namaLengkap));
+                                const validData = normalizedData.filter(function(row) { return row && (row.id || row.namaLengkap) });
                                 
                                 if(validData.length > 0){
                                     this.familyData = validData;
                                     this.sheetStatus = `Berhasil memuat ${validData.length} data dari Spreadsheet!`;
                                 } else {
-                                     this.sheetStatus = "Data berhasil ditarik, tapi struktur tabel/kolom tidak sesuai atau kosong.";
+                                     this.sheetStatus = "Data ditarik, tapi struktur kolom tidak sesuai atau kosong.";
                                 }
                             }
                         },
                         error: (err) => {
                             this.isRefreshing = false;
                             console.error(err);
-                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan Spreadsheet disetel Publik.";
+                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan disetel Publik.";
                         }
                     });
 
-                    // Ambil Data Acara (Jika link diisi di Pengaturan)
+                    // Ambil Data Acara
                     if (this.sheetAcaraUrl) {
                         const fetchAcaraUrl = this.sheetAcaraUrl + (this.sheetAcaraUrl.includes('?') ? '&' : '?') + 'bypass=' + new Date().getTime();
                         Papa.parse(fetchAcaraUrl, {
@@ -1403,14 +1672,17 @@
                             header: true,
                             complete: (results) => {
                                 if (results.data && Array.isArray(results.data)) {
-                                    this.acaraData = results.data.filter(row => row.id || row.Id || row.ID).map(row => ({
-                                        id: row.id || row.Id || row.ID,
-                                        judul: row.judul || row.Judul,
-                                        tanggal: row.tanggal || row.Tanggal,
-                                        jenis: row.jenis || row.Jenis,
-                                        gdriveLink: row.gdriveLink || row.GdriveLink || row.gdrivelink,
-                                        fotos: (row.fotos || row.Fotos) ? (row.fotos || row.Fotos).split(',').filter(f => f) : []
-                                    }));
+                                    const rawAcara = results.data.filter(function(row) { return row && typeof row === 'object' });
+                                    this.acaraData = rawAcara.filter(function(row) { return row.id || row.Id || row.ID }).map(function(row) {
+                                        return {
+                                            id: row.id || row.Id || row.ID,
+                                            judul: row.judul || row.Judul,
+                                            tanggal: row.tanggal || row.Tanggal,
+                                            jenis: row.jenis || row.Jenis,
+                                            gdriveLink: row.gdriveLink || row.GdriveLink || row.gdrivelink,
+                                            fotos: (row.fotos || row.Fotos) ? (row.fotos || row.Fotos).split(',').filter(function(f){ return f }) : []
+                                        };
+                                    });
                                 }
                             }
                         });
@@ -1421,7 +1693,24 @@
 
         app.component('org-node', {
             props: ['node'],
-            template: '#org-node-template'
+            template: '#org-node-template',
+            methods: {
+                getSafeImg(url) {
+                    if (!url || typeof url !== 'string') return '';
+                    if (url.startsWith('data:')) return url; 
+                    
+                    let fileId = '';
+                    if (url.includes('drive.google.com')) {
+                        const match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                        if (match) fileId = match[1];
+                    }
+                    
+                    if (fileId) {
+                        return `https://lh3.googleusercontent.com/d/${fileId}`;
+                    }
+                    return url; 
+                }
+            }
         });
 
         app.mount('#app');
