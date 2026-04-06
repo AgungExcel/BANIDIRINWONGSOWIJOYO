@@ -186,7 +186,7 @@
                                     <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
                                 </ul>
                             </div>
-                            <p v-if="treeData.length === 0" class="text-gray-400 italic">Belum ada data keluarga.</p>
+                            <p v-if="treeData.length === 0" class="text-gray-400 italic">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                         </div>
                     </div>
                 </div>
@@ -333,7 +333,7 @@
 
         </main>
 
-        <!-- CUSTOM UI MODAL (Pengganti Alert & Confirm Bawaan) -->
+        <!-- CUSTOM UI MODAL -->
         <div v-if="customDialog.show" class="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4">
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-100 transition-transform">
                 <div class="p-6 text-center">
@@ -448,7 +448,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Link Baca Data (Export CSV Sheets)</label>
                         <p class="text-xs text-gray-500 mb-2">Ini untuk memuat data dari Spreadsheet secara otomatis.</p>
-                        <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/.../export?format=csv" class="w-full border p-2 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/.../export?format=csv" class="w-full border p-2 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-emerald-50">
                     </div>
                     
                     <div class="pt-4 border-t border-gray-100">
@@ -605,7 +605,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative">
                                         <!-- TAMPILAN PREVIEW FOTO -->
@@ -734,12 +734,12 @@
                         show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
                     },
                     
-                    // URL diganti menggunakan link Export real-time dari Google Sheets
-                    sheetUrl: 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
-                    tempSheetUrl: 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
+                    // KITA GUNAKAN PENYIMPANAN LOCALSTORAGE AGAR BISA DISIMPAN MELALUI UI MODAL
+                    sheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
+                    tempSheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
                     
-                    appScriptUrl: 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
-                    tempAppScriptUrl: 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
+                    appScriptUrl: localStorage.getItem('silsilah_gas_url') || 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
+                    tempAppScriptUrl: localStorage.getItem('silsilah_gas_url') || 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
 
                     sheetStatus: '',
                     isRefreshing: false,
@@ -771,7 +771,8 @@
                     
                     const roots = validData.filter(item => {
                         const pid = item.parentId ? String(item.parentId).trim() : "";
-                        return pid === "" || !allIds.has(pid);
+                        // LOGIKA ANTI-ERROR: Jadikan root jika tidak punya parent, parentnya strip (-), atau parentnya tidak terdaftar di sistem
+                        return pid === "" || pid === "-" || !allIds.has(pid);
                     });
 
                     const buildTreeFromNodes = (nodes, visited = new Set()) => {
@@ -785,7 +786,7 @@
                             const children = validData.filter(child => {
                                 if (!node.id) return false;
                                 const childPid = child.parentId ? String(child.parentId).trim() : "";
-                                return childPid !== "" && childPid === String(node.id).trim();
+                                return childPid !== "" && childPid !== "-" && childPid === String(node.id).trim();
                             });
                             
                             return {
@@ -1050,28 +1051,28 @@
                             });
                         }
                         
-                        this.showAlert('Berhasil Dikirim', 'Mohon tunggu 2-3 detik, sistem sedang memproses data dan memperbarui layar Anda secara otomatis.', 'info');
+                        this.showAlert('Berhasil Mengirim Data', 'Aplikasi sedang memperbarui Server dan menyinkronkan ulang data... Tunggu sekitar 5 detik untuk melihat hasilnya di Pohon Silsilah.', 'info');
                         this.isFormOpen = false;
 
-                        // Jeda lebih lama agar Google Drive & Sheet memproses foto dan input data
+                        // Jeda 5 detik agar Google Drive & Sheet memproses foto secara sempurna
                         if(this.appScriptUrl){
                             setTimeout(() => {
                                 this.loadFromSheet();
                                 this.customDialog.show = false;
-                            }, 3500);
+                            }, 5000);
                         } else {
                             this.loadFromSheet();
                         }
 
                     } catch(err) {
-                        this.showAlert('Perhatian', "Gagal menghubungi server.", 'warning');
+                        this.showAlert('Perhatian', "Gagal menghubungi server Google Apps Script Anda.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
                     }
                 },
                 deleteMember(member) {
-                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi?", async () => {
+                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", async () => {
                         if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
                             try {
                                 await fetch(this.appScriptUrl, {
@@ -1080,11 +1081,11 @@
                                     headers: { 'Content-Type': 'text/plain' },
                                     body: JSON.stringify({ action: 'delete', id: member.id })
                                 });
-                                this.showAlert('Berhasil', "Menghapus data, memuat ulang tampilan...", 'info');
+                                this.showAlert('Menghapus Data...', "Perintah hapus telah dikirim. Memuat ulang sistem dalam beberapa detik...", 'info');
                                 setTimeout(() => {
                                     this.loadFromSheet();
                                     this.customDialog.show = false;
-                                }, 3000);
+                                }, 4000);
                             } catch(e) {
                                 console.error(e);
                             }
@@ -1126,6 +1127,7 @@
 
                 saveSettings() {
                     localStorage.setItem('silsilah_gas_url', this.tempAppScriptUrl);
+                    localStorage.setItem('silsilah_csv_url', this.tempSheetUrl);
                     this.appScriptUrl = this.tempAppScriptUrl;
                     this.sheetUrl = this.tempSheetUrl;
                     this.loadFromSheet();
@@ -1143,8 +1145,8 @@
                     this.isRefreshing = true;
                     this.sheetStatus = "Mengambil data...";
                     
-                    // Bypass cache agar setiap fetch narik data paling baru dari CSV Google
-                    const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + '_t=' + new Date().getTime();
+                    // Bypass cache mutlak dengan Math.random() untuk memastikan real-time 100%
+                    const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'bypass=' + Math.random();
                     
                     Papa.parse(fetchUrl, {
                         download: true,
@@ -1152,7 +1154,7 @@
                         complete: (results) => {
                             this.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
-                                // NORMALISASI DATA (Menyesuaikan huruf besar/kecil sesuai Spreadsheet tanpa bergantung case sensitif)
+                                // NORMALISASI DATA OTOMATIS: Semua header Spreadsheet akan diconvert huruf kecil otomatis.
                                 const normalizedData = results.data.map(row => {
                                     const normRow = {};
                                     for (const key in row) {
@@ -1194,7 +1196,7 @@
                         error: (err) => {
                             this.isRefreshing = false;
                             console.error(err);
-                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV.";
+                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan Spreadsheet disetel Publik.";
                         }
                     });
                 }
