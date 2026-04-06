@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
-    <!-- Favicon: Spasi dihapus url encoding-nya agar terbaca normal di semua perangkat -->
-    <link rel="icon" href="mbah dirin.png" type="image/png">
-    <link rel="shortcut icon" href="mbah dirin.png" type="image/png">
+    <!-- Favicon: Menggunakan nama file persis yang diunggah -->
+    <link rel="icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
+    <link rel="shortcut icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,6 +44,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
     <div id="app" v-cloak>
+        
         <!-- HEADER -->
         <header class="bg-emerald-800 text-white shadow-lg print-hidden sticky top-0 z-40">
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
@@ -83,13 +84,12 @@
             <!-- 1. BERANDA & DASHBOARD -->
             <transition name="fade" mode="out-in">
                 <div v-if="activeTab === 'home'" class="max-w-5xl mx-auto space-y-6">
-                    <!-- Hero Section -->
                     <div class="bg-white rounded-[1.25rem] shadow-sm overflow-hidden border border-gray-100">
                         <div class="h-32 md:h-44 bg-[#0f8754] relative"></div>
                         <div class="px-6 pb-10 relative">
                             <div class="flex flex-col items-center -mt-16 md:-mt-20 mb-5 relative">
-                                <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-white flex items-center justify-center">
-                                    <img :src="mainPhoto" alt="Ikon Beranda" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/200?text=Foto'"/>
+                                <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                    <img :src="mainPhoto" alt="Ikon Beranda" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/200?text=Foto+Tidak+Ditemukan'"/>
                                 </div>
                             </div>
                             <div class="text-center">
@@ -102,7 +102,6 @@
                         </div>
                     </div>
 
-                    <!-- Search Bar Beranda -->
                     <div class="max-w-xl mx-auto -mt-10 mb-4 relative z-10 px-4">
                         <div class="bg-white rounded-full shadow-lg p-1.5 flex items-center border border-gray-200">
                             <input type="text" v-model="homeSearchQuery" @keyup.enter="goToDataTab" placeholder="Cari nama anggota keluarga..." class="w-full bg-transparent py-2.5 px-5 focus:outline-none text-gray-700 placeholder-gray-400 font-medium">
@@ -112,9 +111,7 @@
                         </div>
                     </div>
 
-                    <!-- Dashboard / Rekap Statistik -->
                     <div class="space-y-6">
-                        <!-- Quotes Box -->
                         <div class="bg-[#fff9f2] border border-[#fce9d5] rounded-[1.25rem] p-6 shadow-sm relative group">
                             <i class="fas fa-quote-left text-[#fcdab6] text-4xl absolute top-5 left-6"></i>
                             <div class="text-center px-10 relative z-10">
@@ -128,7 +125,6 @@
                             </button>
                         </div>
 
-                        <!-- 4 Stat Cards -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div class="bg-[#2c604f] text-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
                                 <i class="fas fa-users absolute -right-2 -bottom-2 text-7xl opacity-[0.15]"></i>
@@ -152,7 +148,6 @@
                             </div>
                         </div>
 
-                        <!-- Charts Section -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col items-center">
                                 <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">PROPORSI JENIS KELAMIN</h4>
@@ -190,18 +185,33 @@
                         <div>
                             <h2 class="text-2xl font-bold text-emerald-800">Daftar Anggota Keluarga</h2>
                         </div>
-                        <div class="flex gap-2 w-full md:w-auto">
-                            <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                            <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-4 py-2 text-sm min-w-[150px] md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                             
-                            <button @click="refreshData" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition flex items-center justify-center" title="Refresh Data dari Spreadsheet">
+                            <button @click="refreshData" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition flex flex-shrink-0 items-center justify-center" title="Refresh Data">
                                 <i class="fas fa-sync-alt" :class="{'animate-spin': isRefreshing}"></i>
                             </button>
 
-                            <button @click="openForm('add')" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex items-center gap-2 shadow-md" title="Tambah Data Baru">
-                                <i class="fas fa-user-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah Anggota</span>
+                            <button @click="openForm('add')" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex flex-shrink-0 items-center gap-2 shadow-md" title="Tambah Data Baru">
+                                <i class="fas fa-user-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah</span>
                             </button>
 
-                            <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition" title="Pengaturan Spreadsheet">
+                            <div class="relative group">
+                                <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex items-center gap-2 flex-shrink-0">
+                                    <i class="fas fa-download"></i> <span class="hidden md:inline text-sm font-medium">Unduh</span>
+                                </button>
+                                <!-- Dropdown Download -->
+                                <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                                    <button @click="downloadDataExcel" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b flex items-center gap-2 text-green-700 font-semibold rounded-t-xl">
+                                        <i class="fas fa-file-csv"></i> Unduh Data Excel
+                                    </button>
+                                    <button @click="downloadTemplate" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm flex items-center gap-2 text-blue-700 font-semibold rounded-b-xl">
+                                        <i class="fas fa-file-download"></i> Template Excel
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex-shrink-0" title="Pengaturan Spreadsheet">
                                 <i class="fas fa-cog"></i>
                             </button>
                         </div>
@@ -209,7 +219,7 @@
 
                     <!-- Tabel Data -->
                     <div class="overflow-x-auto rounded-lg border border-gray-200">
-                        <table class="w-full text-left border-collapse text-sm">
+                        <table class="w-full text-left border-collapse text-sm min-w-max">
                             <thead>
                                 <tr class="bg-[#d1e7dd] text-gray-800 border-b">
                                     <th class="p-3 font-semibold text-center w-12">No</th>
@@ -253,7 +263,7 @@
                                 <tr v-if="filteredData.length === 0">
                                     <td colspan="8" class="p-8 text-center text-gray-500">
                                         <i class="fas fa-folder-open text-3xl mb-3 text-gray-300"></i><br>
-                                        Tidak ada data yang ditemukan. Pastikan link Spreadsheet terisi dengan benar.
+                                        Tidak ada data yang ditemukan.
                                     </td>
                                 </tr>
                             </tbody>
@@ -286,10 +296,11 @@
                                 <a :href="acara.gdriveLink" target="_blank" class="text-emerald-600 hover:text-emerald-800 text-sm font-semibold flex items-center gap-1">
                                     <i class="fab fa-google-drive"></i> Buka di GDrive
                                 </a>
-                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
+                            <i class="fas fa-images text-4xl mb-3 text-gray-300"></i><br>
                             Belum ada dokumentasi acara yang ditambahkan.
                         </div>
                     </div>
@@ -320,6 +331,27 @@
             </transition>
 
         </main>
+
+        <!-- CUSTOM UI MODAL (Pengganti Alert & Confirm Bawaan) -->
+        <div v-if="customDialog.show" class="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-100 transition-transform">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4" 
+                         :class="customDialog.type === 'warning' ? 'bg-amber-100 text-amber-500' : (customDialog.type === 'success' ? 'bg-emerald-100 text-emerald-500' : 'bg-blue-100 text-blue-500')">
+                        <i class="fas text-3xl" :class="customDialog.type === 'warning' ? 'fa-exclamation-triangle' : (customDialog.type === 'success' ? 'fa-check-circle' : 'fa-info-circle')"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ customDialog.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ customDialog.message }}</p>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 flex justify-center gap-3 border-t">
+                    <button v-if="customDialog.isConfirm" @click="customDialog.show = false" class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition">Batal</button>
+                    <button @click="confirmCustomDialog" class="px-5 py-2 rounded-lg text-white font-semibold transition shadow-sm"
+                            :class="customDialog.type === 'warning' ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'">
+                        {{ customDialog.isConfirm ? 'Ya, Lanjutkan' : 'Mengerti' }}
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- MODAL: DETAIL PROFIL -->
         <div v-if="selectedMember" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="selectedMember = null">
@@ -438,7 +470,6 @@
         <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
         <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
             <div class="bg-[#f3f4f6] rounded-2xl shadow-2xl w-full max-w-4xl my-6 overflow-hidden">
-                <!-- Header -->
                 <div class="bg-white px-8 py-5 flex items-center border-b border-gray-200">
                     <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mr-4">
                         <i :class="formMode === 'add' ? 'fas fa-user-plus' : 'fas fa-user-edit'"></i>
@@ -458,7 +489,6 @@
                 </div>
                 
                 <form @submit.prevent="saveMember" class="p-8 pt-4 space-y-6">
-                    
                     <!-- KARTU 1: INFORMASI DASAR -->
                     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h4 class="text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -584,7 +614,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative">
                                         <img v-if="formMember.foto" :src="formMember.foto" class="w-full h-full object-cover">
@@ -607,6 +637,46 @@
                             <i v-else class="fas fa-cloud-upload-alt"></i> 
                             {{ isSaving ? 'Menyimpan Data...' : 'Simpan Data Anggota' }}
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: TAMBAH ACARA (DIPERBARUI KE UI MODERN) -->
+        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
+                    <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                
+                <form @submit.prevent="saveAcara" class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
+                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
+                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
+                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <option>Foto (Folder)</option>
+                                <option>Video</option>
+                                <option>Dokumen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Google Drive *</label>
+                        <input required v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Batal</button>
+                        <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md">Simpan Acara</button>
                     </div>
                 </form>
             </div>
@@ -665,7 +735,8 @@
                     activeTab: 'home',
                     searchQuery: '',
                     homeSearchQuery: '',
-                    mainPhoto: 'Mbah Dirin New.jpg', // Spasi url dihapus
+                    // Gunakan string persis seperti nama file
+                    mainPhoto: 'Mbah Dirin New.jpg', 
                     familyData: [...defaultData],
                     acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || [],
                     
@@ -679,11 +750,15 @@
                     isFormOpen: false,
                     formMode: 'add',
                     isSaving: false,
+
+                    // MsgBox UI Modern Component State
+                    customDialog: {
+                        show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
+                    },
                     
                     sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     tempSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     
-                    // App script configuration (Langsung tertanam permanen)
                     appScriptUrl: 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
                     tempAppScriptUrl: 'https://script.google.com/macros/s/AKfycbxe2wbKn9iooF7EC2R_vFRkGMeMqhQL3jNYAjdGK4eBALkrvCXv1IN5R0CBCCrpVzJ5wA/exec',
 
@@ -822,6 +897,20 @@
                 setTimeout(() => { this.renderCharts(); }, 500);
             },
             methods: {
+                // MSGBOX MODERN METHODS
+                showAlert(title, message, type = 'info') {
+                    this.customDialog = { show: true, title, message, type, isConfirm: false, onConfirm: null };
+                },
+                showConfirm(title, message, onConfirmCallback) {
+                    this.customDialog = { show: true, title, message, type: 'warning', isConfirm: true, onConfirm: onConfirmCallback };
+                },
+                confirmCustomDialog() {
+                    if (this.customDialog.isConfirm && this.customDialog.onConfirm) {
+                        this.customDialog.onConfirm();
+                    }
+                    this.customDialog.show = false;
+                },
+
                 goToDataTab() {
                     this.searchQuery = this.homeSearchQuery;
                     this.activeTab = 'data';
@@ -849,7 +938,7 @@
                                 labels: ['Laki-laki', 'Perempuan'],
                                 datasets: [{
                                     data: [this.dashboardStats.L, this.dashboardStats.P],
-                                    backgroundColor: ['#1d70b8', '#c2185b'],
+                                    backgroundColor: ['#1a71b8', '#c0175b'],
                                     borderWidth: 1
                                 }]
                             },
@@ -862,7 +951,7 @@
                                 labels: ['Keturunan', 'Menantu', 'Lainnya'],
                                 datasets: [{
                                     data: [this.dashboardStats.keturunan, this.dashboardStats.menantu, this.dashboardStats.lainnya],
-                                    backgroundColor: ['#4caf50', '#9e9e9e', '#ffc107'],
+                                    backgroundColor: ['#2c604f', '#9e9e9e', '#ffc107'],
                                     borderWidth: 1
                                 }]
                             },
@@ -940,20 +1029,35 @@
                     }
                     this.isFormOpen = true;
                 },
+
+                // KOMPRESI FOTO BASE64 AGAR BISA MASUK GOOGLE SHEET
                 handleFotoUpload(event) {
                     const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.formMember.foto = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 300; // Kompresi ukuran foto (Resolusi aman untuk sheet)
+                            const scaleSize = MAX_WIDTH / img.width;
+                            canvas.width = MAX_WIDTH;
+                            canvas.height = img.height * scaleSize;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            
+                            // Mengubah gambar menjadi Data URL kualitas 70%
+                            this.formMember.foto = canvas.toDataURL('image/jpeg', 0.7);
+                        }
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 },
-                // Metode simpan baru yang terintegrasi dengan Google Apps Script (Web App)
+
                 async saveMember() {
                     if (!this.appScriptUrl) {
-                        // Jika URL Script tidak ada, kita hanya simpan ke preview lokal (Fallback)
                         this.saveLocalPreview();
                         return;
                     }
@@ -964,12 +1068,8 @@
                             this.formMember.id = "ID_" + Date.now();
                         }
                         
-                        const payload = {
-                            action: this.formMode,
-                            data: this.formMember
-                        };
+                        const payload = { action: this.formMode, data: this.formMember };
 
-                        // Pengiriman data menggunakan fetch (no-cors) agar tidak diblokir browser statis
                         await fetch(this.appScriptUrl, {
                             method: 'POST',
                             mode: 'no-cors',
@@ -977,18 +1077,15 @@
                             body: JSON.stringify(payload)
                         });
 
-                        // Karena no-cors, kita tidak bisa membaca response sukses, tapi request tetap terkirim
-                        alert("Permintaan simpan ke Server (Google Sheet) telah dikirim!");
-                        
+                        this.showAlert('Berhasil', 'Permintaan simpan ke Server (Google Sheet) telah dikirim!', 'success');
                         this.isFormOpen = false;
                         
-                        // Jeda sejenak untuk membiarkan Google Sheet memproses, lalu refresh data
                         setTimeout(() => {
                             this.loadFromSheet();
                         }, 2500);
 
                     } catch(err) {
-                        alert("Gagal menghubungi server: " + err.message);
+                        this.showAlert('Gagal', "Gagal menghubungi server: " + err.message, 'warning');
                     } finally {
                         this.isSaving = false;
                     }
@@ -997,20 +1094,19 @@
                     if (this.formMode === 'add') {
                         this.formMember.id = "TMP_" + Date.now();
                         this.familyData.push({ ...this.formMember });
-                        alert("Disimpan ke Preview Lokal! (Masukkan Link Apps Script di Pengaturan untuk menyimpan ke Server)");
+                        this.showAlert('Preview Lokal', "Disimpan ke Preview Lokal! (Pastikan Link Apps Script diisi agar tersimpan ke Server).", 'success');
                     } else {
                         const index = this.familyData.findIndex(item => item.id === this.formMember.id);
                         if (index !== -1) {
                             this.familyData[index] = { ...this.formMember };
-                            alert("Perubahan disimpan ke Preview Lokal!");
+                            this.showAlert('Preview Lokal', "Perubahan disimpan ke Preview Lokal!", 'success');
                         }
                     }
                     this.isFormOpen = false;
                 },
-                async deleteMember(member) {
-                    if(confirm("Hapus anggota ini?\n\nJika ini adalah data permanen, penghapusan sebenarnya harus dilakukan manual di Spreadsheet.")) {
+                deleteMember(member) {
+                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Spreadsheet?", async () => {
                         if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
-                            // Kirim request hapus ke server
                             try {
                                 await fetch(this.appScriptUrl, {
                                     method: 'POST',
@@ -1018,19 +1114,70 @@
                                     headers: { 'Content-Type': 'text/plain' },
                                     body: JSON.stringify({ action: 'delete', id: member.id })
                                 });
-                                alert("Permintaan hapus dikirim ke server!");
+                                this.showAlert('Berhasil', "Permintaan hapus dikirim ke server!", 'success');
                             } catch(e) {
                                 console.error(e);
                             }
                         }
                         this.familyData = this.familyData.filter(m => m.id !== member.id);
-                    }
+                    });
                 },
+
+                // DOWNLOAD CSV EXCEL & TEMPLATE
+                triggerDownloadCSV(csvContent, fileName) {
+                    const blob = new Blob(["\uFEFF"+csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", fileName);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                downloadDataExcel() {
+                    if(this.familyData.length === 0) {
+                        this.showAlert('Kosong', 'Tidak ada data untuk di-download.', 'warning');
+                        return;
+                    }
+                    const csv = Papa.unparse(this.familyData);
+                    this.triggerDownloadCSV(csv, 'Data_Silsilah_Bani_Dirin.csv');
+                },
+                downloadTemplate() {
+                    const templateData = [{
+                        id: 'ID_CONTOH', foto: '', namaLengkap: 'Nama Lengkap Contoh', panggilan: 'Panggilan', 
+                        jk: 'L', tempatLahir: 'Jakarta', tglLahir: '1990-01-01', statusKehidupan: 'Hidup', 
+                        tglWafat: '', makam: '', namaAyah: '', namaIbu: '', statusPernikahan: 'Belum Menikah', 
+                        namaPasangan: '', alamat: 'Jl. Contoh Alamat', noHp: '081234567890', 
+                        statusRelasi: 'Anak', parentId: 'ID_ORANGTUA'
+                    }];
+                    const csv = Papa.unparse(templateData);
+                    this.triggerDownloadCSV(csv, 'Template_Input_Silsilah.csv');
+                },
+
+                // MANAJEMEN ACARA
+                saveAcara() {
+                    const newAcara = { ...this.formAcara, id: Date.now() };
+                    this.acaraData.push(newAcara);
+                    localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
+                    this.isAcaraFormOpen = false;
+                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' };
+                    this.showAlert('Berhasil', 'Acara baru berhasil disimpan!', 'success');
+                },
+                deleteAcara(id) {
+                    this.showConfirm('Hapus Acara', "Apakah Anda yakin ingin menghapus album acara ini?", () => {
+                        this.acaraData = this.acaraData.filter(a => a.id !== id);
+                        localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
+                        this.showAlert('Terhapus', 'Acara telah dihapus.', 'info');
+                    });
+                },
+
                 saveSettings() {
                     localStorage.setItem('silsilah_gas_url', this.tempAppScriptUrl);
                     this.appScriptUrl = this.tempAppScriptUrl;
                     this.sheetUrl = this.tempSheetUrl;
                     this.loadFromSheet();
+                    this.isSettingsOpen = false;
                 },
                 refreshData() {
                     this.loadFromSheet();
@@ -1054,7 +1201,6 @@
                                 if(validData.length > 0){
                                     this.familyData = validData;
                                     this.sheetStatus = `Berhasil memuat ${validData.length} data dari Spreadsheet!`;
-                                    setTimeout(() => { this.isSettingsOpen = false; }, 1500);
                                 } else {
                                      this.sheetStatus = "Data berhasil ditarik, tapi struktur tabel/kolom tidak sesuai atau kosong.";
                                 }
