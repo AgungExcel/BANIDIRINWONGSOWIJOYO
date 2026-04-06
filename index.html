@@ -6,7 +6,8 @@
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
     <!-- Favicon Mbah Dirin -->
-    <link rel="icon" href="mbah dirin.png" type="image/png">
+    <link rel="icon" href="mbah%20dirin.png" type="image/png">
+    <link rel="shortcut icon" href="mbah%20dirin.png" type="image/png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -129,6 +130,12 @@
                         </div>
                         <div class="flex gap-2 w-full md:w-auto">
                             <input type="text" v-model="searchQuery" placeholder="Cari nama anggota..." class="border rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            
+                            <!-- Tombol Tambah Data -->
+                            <a href="https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/edit?usp=sharing" target="_blank" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition flex items-center gap-2" title="Tambah Data di Spreadsheet">
+                                <i class="fas fa-plus"></i> <span class="hidden md:inline text-sm">Tambah Data</span>
+                            </a>
+
                             <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition" title="Pengaturan Spreadsheet">
                                 <i class="fas fa-cog"></i>
                             </button>
@@ -430,9 +437,9 @@
                     isSettingsOpen: false,
                     isAcaraFormOpen: false,
                     
-                    // Spreadsheet Integration (Link Spreadsheet Default Disematkan)
-                    sheetUrl: localStorage.getItem('silsilah_sheet_url_v2') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
-                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url_v2') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
+                    // Spreadsheet Integration (Link Spreadsheet Default Disematkan Permanen)
+                    sheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
+                    tempSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdaBaz8y4nqq6oGMJhxif6i0Ksm1O7VxmQgc3BMCXVTsLksdZ4ML2m59FN01_dalElGuN2QUicgIz2/pub?gid=0&single=true&output=csv',
                     sheetStatus: '',
 
                     formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' }
@@ -572,7 +579,6 @@
                 },
                 // Spreadsheet Integration via PapaParse
                 saveSheetUrl() {
-                    localStorage.setItem('silsilah_sheet_url_v2', this.tempSheetUrl);
                     this.sheetUrl = this.tempSheetUrl;
                     this.loadFromSheet();
                 },
