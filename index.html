@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
+    <!-- META TAGS UNTUK THUMBNAIL WHATSAPP / SOSMED -->
+    <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
+    <meta name="title" content="Silsilah Digital - Bani Dirin Wongso Wijoyo">
+    <meta name="description" content="Aplikasi silsilah keturunan keluarga besar Bani Dirin Wongso Wijoyo. Klik untuk melihat daftar keluarga dan pohon silsilah.">
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Silsilah Digital - Bani Dirin Wongso Wijoyo">
+    <meta property="og:description" content="Aplikasi silsilah keturunan keluarga besar Bani Dirin Wongso Wijoyo.">
+    <!-- Gambar thumbnail saat dibagikan -->
+    <meta property="og:image" content="home.png">
+
     <link rel="icon" href="tab.png" type="image/png">
     <link rel="shortcut icon" href="tab.png" type="image/png">
     
@@ -63,13 +74,17 @@
                     <div class="bg-white p-2 rounded-full text-emerald-800 flex-shrink-0">
                         <i class="fas fa-network-wired text-lg md:text-xl"></i>
                     </div>
-                    <div class="text-center md:text-left">
+                    <div class="text-center md:text-left flex-1">
                         <h1 class="text-xl md:text-2xl font-bold leading-tight">SILSILAH DIGITAL</h1>
                         <p class="text-emerald-200 text-[10px] md:text-xs tracking-wider">BANI DIRIN WONGSO WIJOYO</p>
                     </div>
+                    <!-- TOMBOL BAGIKAN (SHARE) -->
+                    <button @click="shareApp" class="bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-md whitespace-nowrap">
+                        <i class="fas fa-share-alt"></i> <span class="hidden sm:inline">Bagikan</span>
+                    </button>
                 </div>
                 
-                <nav class="flex flex-wrap justify-center gap-1 bg-emerald-900/50 p-1 rounded-lg w-full md:w-auto overflow-x-auto">
+                <nav class="flex flex-wrap justify-center gap-1 bg-emerald-900/50 p-1 rounded-lg w-full md:w-auto overflow-x-auto mt-2 md:mt-0">
                     <button @click="activeTab = 'home'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'home', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'home'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-home"></i> <span class="hidden sm:inline">Beranda</span>
                     </button>
@@ -311,9 +326,9 @@
                     <div class="flex justify-between items-center mb-4 md:mb-6 border-b pb-3 md:pb-4">
                         <div>
                             <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Acara & Dokumentasi</h2>
-                            <p class="text-xs md:text-sm text-gray-500">Galeri foto dan video acara keluarga</p>
+                            <p class="text-xs md:text-sm text-gray-500">Album memori dan dokumentasi keluarga</p>
                         </div>
-                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-emerald-700 text-xs md:text-sm flex items-center gap-1.5 md:gap-2">
+                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-emerald-700 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 shadow-md">
                             <i class="fas fa-plus"></i> <span class="hidden md:inline">Tambah Acara</span>
                         </button>
                     </div>
@@ -325,13 +340,20 @@
                                     <h3 class="font-bold text-base md:text-lg text-gray-800">{{ acara.judul }}</h3>
                                     <span class="text-[10px] md:text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
                                 </div>
-                                <p class="text-gray-500 text-xs md:text-sm mb-4"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
+                                <p class="text-gray-500 text-xs md:text-sm mb-3"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
+                                
+                                <!-- TAMPILAN FOTO ACARA (MAX 5) -->
+                                <div v-if="acara.fotos && acara.fotos.length > 0" class="flex gap-2 overflow-x-auto py-2 mb-2 scrollbar-hide">
+                                    <img v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :src="foto" class="w-16 h-16 object-cover rounded-md border border-gray-200 shadow-sm flex-shrink-0">
+                                </div>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center">
-                                <a :href="acara.gdriveLink" target="_blank" class="text-emerald-600 hover:text-emerald-800 text-xs md:text-sm font-semibold flex items-center gap-1">
-                                    <i class="fab fa-google-drive"></i> Buka di GDrive
+                            <div class="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center">
+                                <a v-if="acara.gdriveLink" :href="acara.gdriveLink" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm font-semibold flex items-center gap-1">
+                                    <i class="fab fa-google-drive"></i> Buka GDrive / Video
                                 </a>
-                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600 p-1 md:p-2"><i class="fas fa-trash"></i></button>
+                                <span v-else class="text-xs text-gray-400 italic">Disimpan Lokal</span>
+                                
+                                <button @click="deleteAcara(acara.id)" class="text-red-400 hover:text-red-600 p-1 md:p-2 bg-red-50 rounded-full"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
@@ -717,7 +739,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
+                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
                                 <div class="flex items-center gap-2 md:gap-3">
                                     <div class="w-9 h-9 md:w-10 md:h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
                                         <template v-if="formMember.foto">
@@ -725,7 +747,7 @@
                                         </template>
                                         <i v-else class="fas fa-user text-sm md:text-base" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                                     </div>
-                                    <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1 md:p-1.5 text-[10px] md:text-sm file:mr-2 md:file:mr-4 file:py-1 file:px-2 md:file:px-4 file:rounded file:border-0 file:text-[10px] md:file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                                    <input type="file" accept="image/*" @change="handleMemberFotoUpload" class="w-full border border-gray-300 rounded-md p-1 md:p-1.5 text-[10px] md:text-sm file:mr-2 md:file:mr-4 file:py-1 file:px-2 md:file:px-4 file:rounded file:border-0 file:text-[10px] md:file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
                                 </div>
                             </div>
                         </div>
@@ -747,41 +769,54 @@
             </div>
         </div>
 
-        <!-- MODAL: TAMBAH ACARA -->
+        <!-- MODAL: TAMBAH ACARA DENGAN UPLOAD FOTO -->
         <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
                 <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
                     <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
                     <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
                 </div>
                 
-                <form @submit.prevent="saveAcara" class="p-6 space-y-5">
+                <form @submit.prevent="saveAcara" class="p-6 space-y-4 md:space-y-5 max-h-[80vh] overflow-y-auto">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
-                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
+                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
-                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
+                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
-                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                                <option>Foto (Folder)</option>
+                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
+                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                                <option>Foto / Galeri</option>
                                 <option>Video</option>
                                 <option>Dokumen</option>
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Google Drive *</label>
-                        <input required v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    
+                    <div class="border-t border-gray-200 pt-4 mt-2">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Upload Foto Acara Langsung (Maks 5 Foto)</label>
+                        <input type="file" multiple accept="image/*" @change="handleAcaraFotoUpload" class="w-full border border-gray-300 rounded-lg p-1.5 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
+                        <p class="text-[10px] md:text-xs text-gray-500 mt-1">Foto akan dikompresi otomatis agar aplikasi tidak berat.</p>
+                        
+                        <div v-if="formAcara.fotos.length > 0" class="flex gap-2 overflow-x-auto mt-3 pb-2 scrollbar-hide">
+                            <div v-for="(f, idx) in formAcara.fotos" :key="idx" class="relative group">
+                                <img :src="f" class="w-14 h-14 object-cover rounded-md border border-gray-200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4">
+                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Atau Gunakan Link Google Drive (Untuk Video / Album Besar)</label>
+                        <input v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                     </div>
                     
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-                        <button type="button" @click="isAcaraFormOpen = false" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">Batal</button>
-                        <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md">Simpan Acara</button>
+                        <button type="button" @click="isAcaraFormOpen = false" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition text-sm">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md text-sm">Simpan Acara</button>
                     </div>
                 </form>
             </div>
@@ -872,7 +907,7 @@
                     sheetStatus: '',
                     isRefreshing: false,
 
-                    formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' },
+                    formAcara: { judul: '', tanggal: '', jenis: 'Foto', gdriveLink: '', fotos: [] },
                     formMember: {
                         id: '', foto: '', namaLengkap: '', panggilan: '', jk: '', tempatLahir: '', tglLahir: '',
                         statusKehidupan: 'Hidup', tglWafat: '', makam: '', namaAyah: '', namaIbu: '',
@@ -1016,6 +1051,32 @@
                 this.calculateTodayJavanese();
             },
             methods: {
+                // TOMBOL SHARE / BAGIKAN
+                shareApp() {
+                    const shareData = {
+                        title: 'Silsilah Digital - Bani Dirin',
+                        text: 'Mari terhubung dan lihat Silsilah Keluarga Besar Bani Dirin Wongso Wijoyo melalui aplikasi ini.',
+                        url: window.location.href,
+                    };
+                    
+                    if (navigator.share) {
+                        navigator.share(shareData).catch((err) => console.log('Gagal membagikan', err));
+                    } else {
+                        // Fallback jika browser tidak mendukung navigator.share
+                        try {
+                            const tempInput = document.createElement("input");
+                            tempInput.value = window.location.href;
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(tempInput);
+                            this.showAlert('Tersalin', 'Link aplikasi telah disalin ke clipboard. Silakan paste di WhatsApp/Sosmed.', 'success');
+                        } catch(e) {
+                            this.showAlert('Info', 'Link aplikasi: ' + window.location.href, 'info');
+                        }
+                    }
+                },
+
                 // EXPORT PDF HTML2PDF (DIPERBAIKI UNTUK LANDSCAPE)
                 downloadPDF(elementId, filename) {
                     const element = document.getElementById(elementId);
@@ -1029,7 +1090,6 @@
 
                     this.showAlert('Memproses PDF', 'Mohon tunggu sebentar, dokumen PDF sedang dibuat...', 'info');
 
-                    // Set landscape and use windowWidth trick to prevent cutoffs
                     const opt = {
                         margin:       [10, 10, 10, 10],
                         filename:     filename,
@@ -1040,7 +1100,7 @@
 
                     html2pdf().set(opt).from(element).save().then(() => {
                         if (elementId === 'tree-content') {
-                            element.style.transform = originalTransform; // Kembalikan ke zoom semula
+                            element.style.transform = originalTransform; 
                         }
                         this.customDialog.show = false;
                     }).catch(err => {
@@ -1336,7 +1396,8 @@
                     this.isFormOpen = true;
                 },
 
-                handleFotoUpload(event) {
+                // UPLOAD FOTO MEMBER KE GOOGLE DRIVE
+                handleMemberFotoUpload(event) {
                     const file = event.target.files[0];
                     if (!file) return;
                     
@@ -1358,6 +1419,36 @@
                         img.src = e.target.result;
                     };
                     reader.readAsDataURL(file);
+                },
+
+                // UPLOAD FOTO MULTIPLE UNTUK ACARA (MAKS 5 FOTO)
+                handleAcaraFotoUpload(event) {
+                    const files = Array.from(event.target.files);
+                    if (files.length > 5) {
+                        this.showAlert('Batas Foto', 'Maksimal 5 foto untuk satu acara agar memori tidak berat. Jika lebih, gunakan Link Google Drive.', 'warning');
+                        return;
+                    }
+                    
+                    this.formAcara.fotos = [];
+                    files.slice(0, 5).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const MAX_WIDTH = 600; // Dikompres agak besar untuk album
+                                const scaleSize = MAX_WIDTH / img.width;
+                                canvas.width = MAX_WIDTH;
+                                canvas.height = img.height * scaleSize;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                
+                                this.formAcara.fotos.push(canvas.toDataURL('image/jpeg', 0.6));
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 },
 
                 saveMember() {
@@ -1434,8 +1525,8 @@
                     this.acaraData.push(newAcara);
                     localStorage.setItem('silsilah_acara', JSON.stringify(this.acaraData));
                     this.isAcaraFormOpen = false;
-                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' };
-                    this.showAlert('Berhasil', 'Acara baru berhasil disimpan!', 'success');
+                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto', gdriveLink: '', fotos: [] };
+                    this.showAlert('Berhasil', 'Acara baru dan fotonya berhasil disimpan secara lokal!', 'success');
                 },
                 deleteAcara(id) {
                     this.showConfirm('Hapus Acara', "Apakah Anda yakin ingin menghapus album acara ini?", () => {
