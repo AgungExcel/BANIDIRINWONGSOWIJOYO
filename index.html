@@ -238,12 +238,11 @@
                                     <td class="p-3 text-center text-gray-500">{{ index + 1 }}</td>
                                     <td class="p-3 text-center">
                                         <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
-                                            <!-- SOLUSI FOTO: Fungsi getSafeImageUrl dipanggil untuk mem-bypass pemblokiran Google Drive -->
                                             <template v-if="item && item.foto">
                                                 <img :src="getSafeImageUrl(item.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                                <i class="fas fa-user text-gray-400 text-xs" style="display:none;"></i>
+                                                <i class="fas fa-user text-xs" :class="item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                             </template>
-                                            <i v-else class="fas fa-user text-gray-400 text-xs"></i>
+                                            <i v-else class="fas fa-user text-xs" :class="item && item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
                                         </div>
                                     </td>
                                     <td class="p-3 font-medium text-gray-800">{{ item && item.namaLengkap }}</td>
@@ -372,10 +371,9 @@
                             <div class="w-24 h-24 rounded-full border-2 border-[#1e7e53] shadow-md overflow-hidden mb-3 bg-gray-100 flex items-center justify-center relative group">
                                 <template v-if="selectedMember && selectedMember.foto">
                                     <img :src="getSafeImageUrl(selectedMember.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <i class="fas fa-user text-5xl text-gray-400" style="display:none;"></i>
+                                    <i class="fas fa-user text-5xl" :class="selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                 </template>
-                                <i v-else-if="selectedMember && selectedMember.jk === 'L'" class="fas fa-user text-5xl text-gray-400"></i>
-                                <i v-else class="fas fa-user-tie text-5xl text-gray-400"></i>
+                                <i v-else class="fas fa-user text-5xl" :class="selectedMember && selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
                             </div>
                             <h4 class="text-2xl font-bold text-[#1e7e53] mb-2">{{ selectedMember && (selectedMember.panggilan || (selectedMember.namaLengkap ? selectedMember.namaLengkap.split(' ')[0] : '')) }}</h4>
                             <span class="bg-gray-500 text-white text-xs px-4 py-1.5 rounded-full font-medium tracking-wide">
@@ -472,7 +470,7 @@
             </div>
         </div>
 
-        <!-- MODAL: FORM TAMBAH / EDIT DATA -->
+        <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
         <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
             <div class="bg-[#f3f4f6] rounded-2xl shadow-2xl w-full max-w-4xl my-6 overflow-hidden">
                 <div class="bg-white px-8 py-5 flex items-center border-b border-gray-200">
@@ -613,11 +611,12 @@
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative">
+                                    <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
                                         <template v-if="formMember.foto">
                                             <img :src="getSafeImageUrl(formMember.foto)" class="w-full h-full object-cover">
                                         </template>
-                                        <i v-else class="fas fa-image text-gray-400 mt-2.5 ml-3"></i>
+                                        <!-- Ikon Kosong Berbeda Warna berdasarkan L/P -->
+                                        <i v-else class="fas fa-user" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                                     </div>
                                     <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1.5 text-sm file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
                                 </div>
@@ -692,9 +691,10 @@
                 <div class="w-14 h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-2 mt-2">
                     <template v-if="node && node.foto">
                         <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <i class="fas fa-user text-gray-400 text-2xl" style="display:none;"></i>
+                        <i class="fas fa-user text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
-                    <i v-else class="fas fa-user text-gray-400 text-2xl"></i>
+                    <!-- Ikon Kosong Berbeda Warna berdasarkan L/P -->
+                    <i v-else class="fas fa-user text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                 </div>
 
                 <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">{{ node.panggilan || node.namaLengkap }}</h3>
@@ -704,6 +704,7 @@
                 </span>
             </div>
 
+            <!-- Rekursif Anak-anaknya -->
             <ul v-if="node.children && node.children.length > 0">
                 <org-node v-for="(child, index) in node.children" :key="child && child.id ? child.id : index" :node="child" @show-detail="$emit('show-detail', $event)"></org-node>
             </ul>
@@ -888,7 +889,6 @@
                 setTimeout(() => { this.renderCharts(); }, 500);
             },
             methods: {
-                // BYPASS PROXY GOOGLE DRIVE UNTUK MENCEGAH GAMBAR ERROR (HOTLINKING BLOCK)
                 getSafeImageUrl(url) {
                     if (!url) return '';
                     if (url.startsWith('data:')) return url; 
@@ -1061,7 +1061,7 @@
                     reader.readAsDataURL(file);
                 },
 
-                async saveMember() {
+                saveMember() {
                     this.isSaving = true;
                     try {
                         if (this.formMode === 'add') {
@@ -1081,44 +1081,36 @@
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
-                            });
+                            }).catch(e => console.error(e));
                         }
                         
-                        this.showAlert('Disimpan', 'Aplikasi sedang memperbarui Data di Server dan akan tersinkronisasi dalam 5 detik secara otomatis.', 'success');
+                        this.showAlert('Berhasil Disimpan', 'Data dan foto berhasil diperbarui di tampilan. Sinkronisasi server sedang berjalan di latar belakang.', 'success');
                         this.isFormOpen = false;
-
-                        if(this.appScriptUrl){
-                            setTimeout(() => {
-                                this.loadFromSheet();
-                            }, 5000);
-                        }
+                        
+                        // JANGAN memanggil ulang loadFromSheet() agar data baru tidak ditimpa data CSV lama yang sedang delay
 
                     } catch(err) {
-                        this.showAlert('Perhatian', "Terjadi kesalahan internal. Namun data berhasil disimpan ke layar saat ini.", 'warning');
+                        this.showAlert('Perhatian', "Gagal menghubungi server. Data hanya tersimpan di perangkat lokal Anda saat ini.", 'warning');
                         this.isFormOpen = false;
                     } finally {
                         this.isSaving = false;
                     }
                 },
                 deleteMember(member) {
-                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", async () => {
-                        if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
-                            try {
-                                fetch(this.appScriptUrl, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    headers: { 'Content-Type': 'text/plain' },
-                                    body: JSON.stringify({ action: 'delete', id: member.id })
-                                });
-                                this.showAlert('Menghapus Data', "Perintah hapus telah dikirim. Memuat ulang sistem dalam beberapa detik...", 'info');
-                                setTimeout(() => {
-                                    this.loadFromSheet();
-                                }, 3000);
-                            } catch(e) {
-                                console.error(e);
-                            }
-                        }
+                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", () => {
+                        // Hapus langsung dari UI agar hilang seketika
                         this.familyData = this.familyData.filter(m => m.id !== member.id);
+
+                        if(this.appScriptUrl && member.id && !member.id.toString().startsWith('TMP_')) {
+                            fetch(this.appScriptUrl, {
+                                method: 'POST',
+                                mode: 'no-cors',
+                                headers: { 'Content-Type': 'text/plain' },
+                                body: JSON.stringify({ action: 'delete', id: member.id })
+                            }).catch(e => console.error(e));
+                            
+                            this.showAlert('Berhasil', "Data berhasil dihapus dari tampilan. Pemrosesan di server sedang berlangsung...", 'success');
+                        }
                     });
                 },
 
