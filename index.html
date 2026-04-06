@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
-    <!-- Favicon: Menggunakan nama file persis yang diunggah -->
-    <link rel="icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
-    <link rel="shortcut icon" href="Mbah%20Dirin%20New.jpg" type="image/jpeg">
+    <!-- Favicon: Diperbarui menjadi tab.png -->
+    <link rel="icon" href="tab.png" type="image/png">
+    <link rel="shortcut icon" href="tab.png" type="image/png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -89,6 +89,7 @@
                         <div class="px-6 pb-10 relative">
                             <div class="flex flex-col items-center -mt-16 md:-mt-20 mb-5 relative">
                                 <div class="w-32 h-32 md:w-40 md:h-40 rounded-full border-[5px] border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                    <!-- Foto beranda diperbarui menjadi home.png -->
                                     <img :src="mainPhoto" alt="Ikon Beranda" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/200?text=Foto+Tidak+Ditemukan'"/>
                                 </div>
                             </div>
@@ -196,20 +197,10 @@
                                 <i class="fas fa-user-plus"></i> <span class="hidden md:inline text-sm font-medium">Tambah</span>
                             </button>
 
-                            <div class="relative group">
-                                <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex items-center gap-2 flex-shrink-0">
-                                    <i class="fas fa-download"></i> <span class="hidden md:inline text-sm font-medium">Unduh</span>
-                                </button>
-                                <!-- Dropdown Download -->
-                                <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                                    <button @click="downloadDataExcel" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm border-b flex items-center gap-2 text-green-700 font-semibold rounded-t-xl">
-                                        <i class="fas fa-file-csv"></i> Unduh Data Excel
-                                    </button>
-                                    <button @click="downloadTemplate" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm flex items-center gap-2 text-blue-700 font-semibold rounded-b-xl">
-                                        <i class="fas fa-file-download"></i> Template Excel
-                                    </button>
-                                </div>
-                            </div>
+                            <!-- Tombol Unduh Langsung Excel (Template dihapus sesuai permintaan) -->
+                            <button @click="downloadDataExcel" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex items-center gap-2 flex-shrink-0" title="Unduh Data ke Excel">
+                                <i class="fas fa-file-csv"></i> <span class="hidden md:inline text-sm font-medium">Unduh Data</span>
+                            </button>
 
                             <button @click="isSettingsOpen = true" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition flex-shrink-0" title="Pengaturan Spreadsheet">
                                 <i class="fas fa-cog"></i>
@@ -735,8 +726,8 @@
                     activeTab: 'home',
                     searchQuery: '',
                     homeSearchQuery: '',
-                    // Gunakan string persis seperti nama file
-                    mainPhoto: 'Mbah Dirin New.jpg', 
+                    // Foto beranda diperbarui
+                    mainPhoto: 'home.png', 
                     familyData: [...defaultData],
                     acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || [],
                     
@@ -1123,7 +1114,7 @@
                     });
                 },
 
-                // DOWNLOAD CSV EXCEL & TEMPLATE
+                // DOWNLOAD CSV EXCEL
                 triggerDownloadCSV(csvContent, fileName) {
                     const blob = new Blob(["\uFEFF"+csvContent], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement("a");
@@ -1142,17 +1133,6 @@
                     }
                     const csv = Papa.unparse(this.familyData);
                     this.triggerDownloadCSV(csv, 'Data_Silsilah_Bani_Dirin.csv');
-                },
-                downloadTemplate() {
-                    const templateData = [{
-                        id: 'ID_CONTOH', foto: '', namaLengkap: 'Nama Lengkap Contoh', panggilan: 'Panggilan', 
-                        jk: 'L', tempatLahir: 'Jakarta', tglLahir: '1990-01-01', statusKehidupan: 'Hidup', 
-                        tglWafat: '', makam: '', namaAyah: '', namaIbu: '', statusPernikahan: 'Belum Menikah', 
-                        namaPasangan: '', alamat: 'Jl. Contoh Alamat', noHp: '081234567890', 
-                        statusRelasi: 'Anak', parentId: 'ID_ORANGTUA'
-                    }];
-                    const csv = Papa.unparse(templateData);
-                    this.triggerDownloadCSV(csv, 'Template_Input_Silsilah.csv');
                 },
 
                 // MANAJEMEN ACARA
