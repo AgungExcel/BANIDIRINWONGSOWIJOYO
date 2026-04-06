@@ -27,6 +27,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        [v-cloak] { display: none; }
+
         @media print {
             @page { size: landscape; margin: 10mm; }
             body { background-color: white; }
@@ -217,7 +219,7 @@
                         </div>
 
                         <div class="flex-1 w-full h-full overflow-auto relative">
-                            <div id="tree-content" class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: `scale(${treeZoom})` }">
+                            <div id="tree-content" class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: 'scale(' + treeZoom + ')' }">
                                 <div class="tree" v-if="treeData.length > 0">
                                     <ul>
                                         <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
@@ -271,7 +273,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(item, index) in filteredData" :key="item?.id || index" class="border-b hover:bg-gray-50 transition-colors">
+                                <tr v-for="(item, index) in filteredData" :key="item && item.id ? item.id : index" class="border-b hover:bg-gray-50 transition-colors">
                                     <td class="p-2 md:p-3 text-center text-gray-500">{{ index + 1 }}</td>
                                     <td class="p-2 md:p-3 text-center">
                                         <div class="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
@@ -395,7 +397,7 @@
                         </div>
                         
                         <p v-if="isTodayBangas" class="mt-4 text-xs md:text-sm text-red-600 font-medium max-w-2xl mx-auto">
-                            Menurut perhitungan Jawa, disarankan untuk lebih berhati-hati<template v-if="bangasReason.includes('Nogo')">, menghindari perjalanan jauh (khususnya arah {{ getBangasDirection(todayJavanese.monthNum) }})</template>, atau menunda acara penting/hajatan pada hari ini.
+                            Menurut perhitungan Jawa, disarankan untuk lebih berhati-hati<template v-if="bangasReason.indexOf('Nogo') !== -1">, menghindari perjalanan jauh (khususnya arah {{ getBangasDirection(todayJavanese.monthNum) }})</template>, atau menunda acara penting/hajatan pada hari ini.
                         </p>
 
                         <div class="mt-6 pt-4 border-t border-gray-200/60 flex flex-col items-center">
@@ -848,7 +850,6 @@
     </script>
 
     <script>
-        // FUNGSI PENYIMPANAN AMAN (Mencegah Crash jika LocalStorage diblokir HP)
         function safeGetStorage(key, defaultVal) {
             try {
                 var val = localStorage.getItem(key);
@@ -864,19 +865,25 @@
             } catch(e) {}
         }
 
-        const { createApp } = Vue;
+        var createApp = Vue.createApp;
 
-        let genderChartInstance = null;
-        let statusChartInstance = null;
+        var genderChartInstance = null;
+        var statusChartInstance = null;
 
-        const defaultData = [];
-
-        const app = createApp({
-            data() {
-                let savedAcara = [];
+        var app = createApp({
+            data: function() {
+                var savedAcara = [];
+                var savedFamily = [];
+                var savedDeleted = [];
                 try {
-                    let raw = safeGetStorage('silsilah_acara', '');
-                    if(raw) savedAcara = JSON.parse(raw);
+                    var rawAcara = safeGetStorage('silsilah_acara', '');
+                    if(rawAcara) savedAcara = JSON.parse(rawAcara);
+                    
+                    var rawFamily = safeGetStorage('silsilah_local_data', '');
+                    if(rawFamily) savedFamily = JSON.parse(rawFamily);
+                    
+                    var rawDel = safeGetStorage('silsilah_deleted', '[]');
+                    if(rawDel) savedDeleted = JSON.parse(rawDel);
                 } catch(e) {}
 
                 return {
@@ -884,8 +891,9 @@
                     searchQuery: '',
                     homeSearchQuery: '',
                     mainPhoto: 'home.png', 
-                    familyData: [],
+                    familyData: savedFamily,
                     acaraData: savedAcara,
+                    deletedItems: savedDeleted,
                     
                     quoteText: safeGetStorage('silsilah_quote', "Keluarga adalah harta yang paling berharga dan tak ternilai harganya."),
                     isEditingQuote: false,
@@ -932,62 +940,69 @@
                 }
             },
             computed: {
-                filteredData() {
-                    const validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
+                filteredData: function() {
+                    var validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
                     if (!this.searchQuery) return validData;
-                    const q = this.searchQuery.toLowerCase();
+                    var q = this.searchQuery.toLowerCase();
                     return validData.filter(function(d) {
-                        return (d.namaLengkap && d.namaLengkap.toLowerCase().includes(q)) || 
-                               (d.panggilan && d.panggilan.toLowerCase().includes(q));
+                        var matchNama = d.namaLengkap && d.namaLengkap.toLowerCase().indexOf(q) !== -1;
+                        var matchPanggilan = d.panggilan && d.panggilan.toLowerCase().indexOf(q) !== -1;
+                        return matchNama || matchPanggilan;
                     });
                 },
-                treeData() {
+                treeData: function() {
                     if (!this.familyData || this.familyData.length === 0) return [];
 
-                    const validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
-                    const allIds = new Set(validData.filter(function(d) { return d.id }).map(function(d) { return String(d.id).trim() }));
+                    var validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
+                    var allIds = {};
+                    for(var i=0; i<validData.length; i++) {
+                        if(validData[i].id) allIds[String(validData[i].id).trim()] = true;
+                    }
                     
-                    const roots = validData.filter(function(item) {
-                        const pid = item.parentId ? String(item.parentId).trim() : "";
-                        const myId = item.id ? String(item.id).trim() : "";
-                        return pid === "" || pid === "-" || pid === myId || !allIds.has(pid);
+                    var roots = validData.filter(function(item) {
+                        var pid = item.parentId ? String(item.parentId).trim() : "";
+                        var myId = item.id ? String(item.id).trim() : "";
+                        return pid === "" || pid === "-" || pid === myId || !allIds[pid];
                     });
 
-                    const buildTreeFromNodes = function(nodes, visited) {
+                    var buildTreeFromNodes = function(nodes, visited) {
                         return nodes.map(function(node) {
                             if (!node) return null;
                             
-                            const nodeId = node.id ? String(node.id).trim() : Math.random().toString();
-                            if (visited.has(nodeId)) return null;
-                            visited.add(nodeId);
+                            var nodeId = node.id ? String(node.id).trim() : Math.random().toString();
+                            if (visited[nodeId]) return null;
+                            
+                            var newVisited = {};
+                            for(var key in visited) newVisited[key] = visited[key];
+                            newVisited[nodeId] = true;
 
-                            const children = validData.filter(function(child) {
+                            var children = validData.filter(function(child) {
                                 if (!child.id || !node.id) return false;
-                                const childPid = child.parentId ? String(child.parentId).trim() : "";
-                                const childId = child.id ? String(child.id).trim() : "";
-                                const parentNodeId = String(node.id).trim();
+                                var childPid = child.parentId ? String(child.parentId).trim() : "";
+                                var childId = child.id ? String(child.id).trim() : "";
+                                var parentNodeId = String(node.id).trim();
                                 
                                 return childPid !== "" && childPid !== "-" && childPid === parentNodeId && childPid !== childId;
                             });
                             
                             children.sort(function(a, b) {
-                                const numA = parseInt(a.urutanAnak) || 999;
-                                const numB = parseInt(b.urutanAnak) || 999;
+                                var numA = parseInt(a.urutanAnak) || 999;
+                                var numB = parseInt(b.urutanAnak) || 999;
                                 return numA - numB;
                             });
                             
-                            return Object.assign({}, node, {
-                                children: buildTreeFromNodes(children, new Set(visited))
-                            });
-                        }).filter(Boolean);
+                            var newNode = JSON.parse(JSON.stringify(node));
+                            newNode.children = buildTreeFromNodes(children, newVisited);
+                            return newNode;
+                        }).filter(function(n) { return n !== null; });
                     };
 
-                    return buildTreeFromNodes(roots, new Set());
+                    return buildTreeFromNodes(roots, {});
                 },
-                memberStats() {
+                memberStats: function() {
                     if (!this.selectedMember) return null;
-                    const id = String(this.selectedMember.id);
-                    const stats = {
+                    var id = String(this.selectedMember.id);
+                    var stats = {
                         pasangan: { L: 0, P: 0 },
                         anak: { L: 0, P: 0 }, menantu: { L: 0, P: 0 },
                         cucu: { L: 0, P: 0 }, cicit: { L: 0, P: 0 }
@@ -997,22 +1012,22 @@
                         this.selectedMember.jk === 'L' ? stats.pasangan.P = 1 : stats.pasangan.L = 1;
                     }
 
-                    const getChildren = function(parentId) {
+                    var getChildren = function(parentId) {
                         return this.familyData.filter(function(d) { return d && String(d.parentId) === String(parentId) });
                     }.bind(this);
 
-                    const anakArr = getChildren(id);
+                    var anakArr = getChildren(id);
                     anakArr.forEach(function(anak) {
                         anak.jk === 'L' ? stats.anak.L++ : stats.anak.P++;
                         if (anak.namaPasangan && anak.namaPasangan !== '-') {
                             anak.jk === 'L' ? stats.menantu.P++ : stats.menantu.L++;
                         }
                         
-                        const cucuArr = getChildren(anak.id);
+                        var cucuArr = getChildren(anak.id);
                         cucuArr.forEach(function(cucu) {
                             cucu.jk === 'L' ? stats.cucu.L++ : stats.cucu.P++;
                             
-                            const cicitArr = getChildren(cucu.id);
+                            var cicitArr = getChildren(cucu.id);
                             cicitArr.forEach(function(cicit) {
                                 cicit.jk === 'L' ? stats.cicit.L++ : stats.cicit.P++;
                             });
@@ -1021,8 +1036,8 @@
 
                     return stats;
                 },
-                dashboardStats() {
-                    const stats = {
+                dashboardStats: function() {
+                    var stats = {
                         total: 0, L: 0, P: 0, wafat: 0, 
                         keturunan: 0, menantu: 0, lainnya: 0
                     };
@@ -1033,10 +1048,10 @@
                         member.jk === 'L' ? stats.L++ : stats.P++;
                         if(member.statusKehidupan === 'Wafat') stats.wafat++;
 
-                        const sr = (member.statusRelasi || '').toLowerCase();
-                        if (sr.includes('menantu')) {
+                        var sr = (member.statusRelasi || '').toLowerCase();
+                        if (sr.indexOf('menantu') !== -1) {
                             stats.menantu++;
-                        } else if (sr.includes('keturunan') || sr.includes('anak') || sr.includes('cucu') || sr.includes('cicit') || sr.includes('leluhur')) {
+                        } else if (sr.indexOf('keturunan') !== -1 || sr.indexOf('anak') !== -1 || sr.indexOf('cucu') !== -1 || sr.indexOf('cicit') !== -1 || sr.indexOf('leluhur') !== -1) {
                             stats.keturunan++;
                         } else {
                             stats.lainnya++;
@@ -1046,36 +1061,37 @@
                 }
             },
             watch: {
-                activeTab(newTab) {
+                activeTab: function(newTab) {
                     if(newTab === 'home') {
                         this.renderCharts();
                     }
                 },
                 familyData: {
                     deep: true,
-                    handler() {
+                    handler: function() {
                         if(this.activeTab === 'home') {
                             this.renderCharts();
                         }
                     }
                 }
             },
-            mounted() {
+            mounted: function() {
+                var self = this;
                 try {
-                    this.loadFromSheet();
+                    self.loadFromSheet();
                 } catch(e) { console.error(e); }
                 
                 try {
-                    setTimeout(() => { this.renderCharts(); }, 500);
+                    setTimeout(function() { self.renderCharts(); }, 500);
                 } catch(e) { console.error(e); }
                 
                 try {
-                    this.calculateTodayJavanese();
+                    self.calculateTodayJavanese();
                 } catch(e) { console.error(e); }
             },
             methods: {
-                shareApp() {
-                    const shareData = {
+                shareApp: function() {
+                    var shareData = {
                         title: 'Silsilah Digital - Bani Dirin',
                         text: 'Mari terhubung dan lihat Silsilah Keluarga Besar Bani Dirin Wongso Wijoyo melalui aplikasi ini.',
                         url: window.location.href,
@@ -1085,7 +1101,7 @@
                         navigator.share(shareData).catch(function(err) { console.log('Gagal', err) });
                     } else {
                         try {
-                            const tempInput = document.createElement("input");
+                            var tempInput = document.createElement("input");
                             tempInput.value = window.location.href;
                             document.body.appendChild(tempInput);
                             tempInput.select();
@@ -1098,11 +1114,11 @@
                     }
                 },
 
-                downloadPDF(elementId, filename) {
-                    const element = document.getElementById(elementId);
+                downloadPDF: function(elementId, filename) {
+                    var element = document.getElementById(elementId);
                     if (!element) return;
                     
-                    let originalTransform = '';
+                    var originalTransform = '';
                     if (elementId === 'tree-content') {
                         originalTransform = element.style.transform;
                         element.style.transform = 'scale(1)'; 
@@ -1110,7 +1126,7 @@
 
                     this.showAlert('Memproses PDF', 'Mohon tunggu sebentar, dokumen PDF sedang dibuat...', 'info');
 
-                    const opt = {
+                    var opt = {
                         margin:       [10, 10, 10, 10],
                         filename:     filename,
                         image:        { type: 'jpeg', quality: 0.98 },
@@ -1118,92 +1134,93 @@
                         jsPDF:        { unit: 'mm', format: 'a3', orientation: elementId === 'tree-content' ? 'landscape' : 'portrait' }
                     };
 
-                    html2pdf().set(opt).from(element).save().then(() => {
+                    var self = this;
+                    html2pdf().set(opt).from(element).save().then(function() {
                         if (elementId === 'tree-content') {
                             element.style.transform = originalTransform; 
                         }
-                        this.customDialog.show = false;
-                    }).catch(err => {
+                        self.customDialog.show = false;
+                    }).catch(function(err) {
                         console.error(err);
-                        this.customDialog.show = false;
-                        this.showAlert('Gagal', 'Terjadi kesalahan saat memproses PDF.', 'warning');
+                        self.customDialog.show = false;
+                        self.showAlert('Gagal', 'Terjadi kesalahan saat memproses PDF.', 'warning');
                     });
                 },
 
-                getJavaneseDate(dateString) {
+                getJavaneseDate: function(dateString) {
                     if (!dateString || typeof dateString !== 'string' || dateString === '-') return '-';
-                    const d = new Date(dateString);
+                    var d = new Date(dateString);
                     if (isNaN(d.getTime())) return dateString;
 
-                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
-                    const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+                    var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                    var pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
 
-                    const epoch = new Date("1970-01-01T00:00:00Z");
-                    const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                    var epoch = new Date("1970-01-01T00:00:00Z");
+                    var targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
                     
-                    const diffTime = targetDate.getTime() - epoch.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    var diffTime = targetDate.getTime() - epoch.getTime();
+                    var diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                     
-                    let pasaranIndex = (diffDays + 3) % 5;
+                    var pasaranIndex = (diffDays + 3) % 5;
                     if (pasaranIndex < 0) {
                         pasaranIndex += 5;
                     }
 
-                    const dayName = days[d.getDay()];
-                    const pasaranName = pasaran[pasaranIndex];
+                    var dayName = days[d.getDay()];
+                    var pasaranName = pasaran[pasaranIndex];
 
-                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-                    let dateFormatted = dateString;
+                    var options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    var dateFormatted = dateString;
                     try {
                          dateFormatted = d.toLocaleDateString('id-ID', options);
                     } catch(e){}
 
-                    return `${dayName} ${pasaranName}, ${dateFormatted}`;
+                    return dayName + " " + pasaranName + ", " + dateFormatted;
                 },
 
-                calculateTodayJavanese() {
+                calculateTodayJavanese: function() {
                     try {
-                        const d = new Date();
-                        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
-                        const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
-                        const wuku = ['Suro', 'Sapar', 'Mulud', 'Ba\'da Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Poso', 'Sawal', 'Selo', 'Besar'];
+                        var d = new Date();
+                        var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                        var pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+                        var wuku = ['Suro', 'Sapar', 'Mulud', 'Ba\'da Mulud', 'Jumadil Awal', 'Jumadil Akhir', 'Rejeb', 'Ruwah', 'Poso', 'Sawal', 'Selo', 'Besar'];
 
-                        const epoch = new Date("1970-01-01T00:00:00Z");
-                        const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
-                        const diffTime = targetDate.getTime() - epoch.getTime();
-                        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                        let pasaranIndex = (diffDays + 3) % 5;
+                        var epoch = new Date("1970-01-01T00:00:00Z");
+                        var targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                        var diffTime = targetDate.getTime() - epoch.getTime();
+                        var diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                        var pasaranIndex = (diffDays + 3) % 5;
                         if (pasaranIndex < 0) pasaranIndex += 5;
 
-                        const dayName = days[d.getDay()];
-                        const pasaranName = pasaran[pasaranIndex];
+                        var dayName = days[d.getDay()];
+                        var pasaranName = pasaran[pasaranIndex];
 
-                        let islamicMonthNum = 1;
+                        var islamicMonthNum = 1;
                         if (window.Intl && typeof Intl.DateTimeFormat === 'function') {
                             try {
-                                let islamicMonthStr = new Intl.DateTimeFormat('en-US-u-ca-islamic', {month: 'numeric'}).format(d);
+                                var islamicMonthStr = new Intl.DateTimeFormat('en-US-u-ca-islamic', {month: 'numeric'}).format(d);
                                 islamicMonthNum = parseInt(islamicMonthStr.replace(/[^0-9]/g, ''));
                                 if(isNaN(islamicMonthNum)) islamicMonthNum = 1;
                             } catch(e) { islamicMonthNum = 1; }
                         }
 
-                        const javaneseMonthName = wuku[islamicMonthNum - 1];
+                        var javaneseMonthName = wuku[islamicMonthNum - 1];
 
-                        let tempDate = new Date();
-                        let suro1Str = '';
+                        var tempDate = new Date();
+                        var suro1Str = '';
                         if (window.Intl && typeof Intl.DateTimeFormat === 'function') {
                             try {
-                                let formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic', { month: 'numeric', day: 'numeric' });
-                                for (let i = 0; i < 380; i++) {
-                                    let parts = formatter.formatToParts(tempDate);
-                                    let pMonth = null; let pDay = null;
+                                var formatter = new Intl.DateTimeFormat('en-US-u-ca-islamic', { month: 'numeric', day: 'numeric' });
+                                for (var i = 0; i < 380; i++) {
+                                    var parts = formatter.formatToParts(tempDate);
+                                    var pMonth = null; var pDay = null;
                                     for(var j=0; j<parts.length; j++){
                                         if(parts[j].type === 'month') pMonth = parts[j];
                                         if(parts[j].type === 'day') pDay = parts[j];
                                     }
                                     
-                                    let m = pMonth ? pMonth.value : null;
-                                    let dVal = pDay ? pDay.value : null;
+                                    var m = pMonth ? pMonth.value : null;
+                                    var dVal = pDay ? pDay.value : null;
 
                                     if (parseInt(m) === 1 && parseInt(dVal) === 1) {
                                         suro1Str = this.getJavaneseDayPasaranOnly(tempDate);
@@ -1219,7 +1236,7 @@
                             pasaran: pasaranName,
                             monthNum: islamicMonthNum,
                             monthName: javaneseMonthName,
-                            fullString: `${dayName} ${pasaranName}, Bulan ${javaneseMonthName}`,
+                            fullString: dayName + " " + pasaranName + ", Bulan " + javaneseMonthName,
                             suro1: suro1Str
                         };
 
@@ -1229,31 +1246,31 @@
                     }
                 },
 
-                getJavaneseDayPasaranOnly(d) {
-                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
-                    const pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+                getJavaneseDayPasaranOnly: function(d) {
+                    var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu'];
+                    var pasaran = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
 
-                    const epoch = new Date("1970-01-01T00:00:00Z");
-                    const targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
-                    const diffTime = targetDate.getTime() - epoch.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                    let pasaranIndex = (diffDays + 3) % 5;
+                    var epoch = new Date("1970-01-01T00:00:00Z");
+                    var targetDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0); 
+                    var diffTime = targetDate.getTime() - epoch.getTime();
+                    var diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    var pasaranIndex = (diffDays + 3) % 5;
                     if (pasaranIndex < 0) pasaranIndex += 5;
 
-                    return `${days[d.getDay()]} ${pasaran[pasaranIndex]}`;
+                    return days[d.getDay()] + " " + pasaran[pasaranIndex];
                 },
 
-                checkBangasLogic() {
-                    const month = this.todayJavanese.monthNum;
-                    const dayPasaran = `${this.todayJavanese.day} ${this.todayJavanese.pasaran}`;
+                checkBangasLogic: function() {
+                    var month = this.todayJavanese.monthNum;
+                    var dayPasaran = this.todayJavanese.day + " " + this.todayJavanese.pasaran;
 
                     this.isTodayBangas = false;
-                    let reasons = [];
+                    var reasons = [];
 
-                    if ([1, 2, 3].includes(month) && (dayPasaran === "Sabtu Legi" || dayPasaran === "Minggu Legi")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
-                    if ([4, 5, 6].includes(month) && (dayPasaran === "Senin Pahing" || dayPasaran === "Selasa Pahing")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
-                    if ([7, 8, 9].includes(month) && (dayPasaran === "Rabu Pon" || dayPasaran === "Kamis Pon")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
-                    if ([10, 11, 12].includes(month) && dayPasaran === "Jum'at Wage") { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ((month === 1 || month === 2 || month === 3) && (dayPasaran === "Sabtu Legi" || dayPasaran === "Minggu Legi")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ((month === 4 || month === 5 || month === 6) && (dayPasaran === "Senin Pahing" || dayPasaran === "Selasa Pahing")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ((month === 7 || month === 8 || month === 9) && (dayPasaran === "Rabu Pon" || dayPasaran === "Kamis Pon")) { reasons.push("Hari Bangas (Nogo Tahun)"); }
+                    if ((month === 10 || month === 11 || month === 12) && dayPasaran === "Jum'at Wage") { reasons.push("Hari Bangas (Nogo Tahun)"); }
 
                     if (this.todayJavanese.suro1 && dayPasaran === this.todayJavanese.suro1) {
                         reasons.push("Hari Pangkreman");
@@ -1267,68 +1284,70 @@
                     }
                 },
 
-                getBangasDirection(month) {
-                    if ([1, 2, 3].includes(month)) return "WETAN (Timur)";
-                    if ([4, 5, 6].includes(month)) return "KIDUL (Selatan)";
-                    if ([7, 8, 9].includes(month)) return "KULON (Barat)";
-                    if ([10, 11, 12].includes(month)) return "LOR (Utara)";
+                getBangasDirection: function(month) {
+                    if (month === 1 || month === 2 || month === 3) return "WETAN (Timur)";
+                    if (month === 4 || month === 5 || month === 6) return "KIDUL (Selatan)";
+                    if (month === 7 || month === 8 || month === 9) return "KULON (Barat)";
+                    if (month === 10 || month === 11 || month === 12) return "LOR (Utara)";
                     return "";
                 },
 
-                zoomIn() {
+                zoomIn: function() {
                     this.treeZoom = Math.min(2, this.treeZoom + 0.1);
                 },
-                zoomOut() {
+                zoomOut: function() {
                     this.treeZoom = Math.max(0.3, this.treeZoom - 0.1);
                 },
-                resetZoom() {
+                resetZoom: function() {
                     this.treeZoom = 1;
                 },
 
-                getSafeImageUrl(url) {
+                getSafeImageUrl: function(url) {
                     if (!url || typeof url !== 'string') return '';
-                    if (url.startsWith('data:')) return url; 
+                    if (url.indexOf('data:') === 0) return url; 
                     
-                    let fileId = '';
-                    if (url.includes('drive.google.com')) {
-                        const match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                    var fileId = '';
+                    if (url.indexOf('drive.google.com') !== -1) {
+                        var match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                         if (match) fileId = match[1];
                     }
                     
                     if (fileId) {
-                        return `https://lh3.googleusercontent.com/d/${fileId}`;
+                        return 'https://lh3.googleusercontent.com/d/' + fileId;
                     }
                     return url; 
                 },
 
-                showAlert(title, message, type = 'info') {
-                    this.customDialog = { show: true, title, message, type, isConfirm: false, onConfirm: null };
+                showAlert: function(title, message, type) {
+                    if (!type) type = 'info';
+                    this.customDialog = { show: true, title: title, message: message, type: type, isConfirm: false, onConfirm: null };
                 },
-                showConfirm(title, message, onConfirmCallback) {
-                    this.customDialog = { show: true, title, message, type: 'warning', isConfirm: true, onConfirm: onConfirmCallback };
+                showConfirm: function(title, message, onConfirmCallback) {
+                    this.customDialog = { show: true, title: title, message: message, type: 'warning', isConfirm: true, onConfirm: onConfirmCallback };
                 },
-                confirmCustomDialog() {
+                confirmCustomDialog: function() {
                     if (this.customDialog.isConfirm && this.customDialog.onConfirm) {
                         this.customDialog.onConfirm();
                     }
                     this.customDialog.show = false;
                 },
 
-                goToDataTab() {
+                goToDataTab: function() {
                     this.searchQuery = this.homeSearchQuery;
                     this.activeTab = 'data';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
-                toggleQuoteEdit() {
+                toggleQuoteEdit: function() {
                     if (this.isEditingQuote) {
                         safeSetStorage('silsilah_quote', this.quoteText);
                     }
                     this.isEditingQuote = !this.isEditingQuote;
                 },
-                renderCharts() {
-                    this.$nextTick(() => {
-                        const ctxGender = document.getElementById('genderChart');
-                        const ctxStatus = document.getElementById('statusChart');
+                renderCharts: function() {
+                    var self = this;
+                    this.$nextTick(function() {
+                        var ctxGender = document.getElementById('genderChart');
+                        var ctxStatus = document.getElementById('statusChart');
                         
                         if (!ctxGender || !ctxStatus) return;
 
@@ -1340,7 +1359,7 @@
                             data: {
                                 labels: ['Laki-laki', 'Perempuan'],
                                 datasets: [{
-                                    data: [this.dashboardStats.L, this.dashboardStats.P],
+                                    data: [self.dashboardStats.L, self.dashboardStats.P],
                                     backgroundColor: ['#1a71b8', '#c0175b'],
                                     borderWidth: 1
                                 }]
@@ -1353,7 +1372,7 @@
                             data: {
                                 labels: ['Keturunan', 'Menantu', 'Lainnya'],
                                 datasets: [{
-                                    data: [this.dashboardStats.keturunan, this.dashboardStats.menantu, this.dashboardStats.lainnya],
+                                    data: [self.dashboardStats.keturunan, self.dashboardStats.menantu, self.dashboardStats.lainnya],
                                     backgroundColor: ['#2c604f', '#9e9e9e', '#ffc107'],
                                     borderWidth: 1
                                 }]
@@ -1362,66 +1381,72 @@
                         });
                     });
                 },
-                openDetailModal(member) {
+                openDetailModal: function(member) {
                     this.selectedMember = member;
                 },
-                calculateAge(tglLahir, tglWafat) {
+                calculateAge: function(tglLahir, tglWafat) {
                     if (!tglLahir || typeof tglLahir !== 'string' || tglLahir === '-') return '-';
-                    const birthYear = new Date(tglLahir).getFullYear();
+                    var birthYear = new Date(tglLahir).getFullYear();
                     if (isNaN(birthYear)) return '-';
                     
-                    let endYear = new Date().getFullYear();
+                    var endYear = new Date().getFullYear();
                     if (tglWafat && typeof tglWafat === 'string' && tglWafat !== '-') {
-                        const deathYear = new Date(tglWafat).getFullYear();
+                        var deathYear = new Date(tglWafat).getFullYear();
                         if (!isNaN(deathYear)) endYear = deathYear;
                     }
                     
-                    const age = endYear - birthYear;
-                    return age >= 0 ? `${age} thn` : '-';
+                    var age = endYear - birthYear;
+                    return age >= 0 ? age + " thn" : '-';
                 },
-                formatDateID(dateString) {
+                formatDateID: function(dateString) {
                     if (!dateString || typeof dateString !== 'string' || dateString === '-') return '-';
-                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    var options = { day: 'numeric', month: 'long', year: 'numeric' };
                     try {
                         return new Date(dateString).toLocaleDateString('id-ID', options);
                     } catch(e) {
                         return dateString;
                     }
                 },
-                generateBookHTML(nodes, level = 1, prefix = "") {
-                    let html = '';
+                generateBookHTML: function(nodes, level, prefix) {
+                    if (!level) level = 1;
+                    if (!prefix) prefix = "";
+                    var html = '';
                     if (!nodes) return html;
-                    nodes.forEach((node, index) => {
+                    var self = this;
+                    
+                    nodes.forEach(function(node, index) {
                         if (!node) return;
-                        const currentPrefix = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
-                        const isMain = level === 1;
+                        var currentPrefix = prefix ? prefix + "." + (index + 1) : String(index + 1);
+                        var isMain = level === 1;
                         
-                        html += `
-                            <div class="mb-4 avoid-break border-b pb-3 ${isMain ? 'mt-6 bg-emerald-50/50 p-3 rounded' : 'ml-6 border-l-2 pl-4 border-emerald-100'}">
-                                <h3 class="font-bold text-gray-800 ${isMain ? 'text-lg text-emerald-800' : 'text-md'} flex items-center gap-2">
-                                    <span class="text-emerald-600">${currentPrefix}.</span> 
-                                    ${node.namaLengkap} ${node.panggilan ? `(${node.panggilan})` : ''}
-                                </h3>
-                                <div class="text-xs text-gray-600 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
-                                    <span><b>Status:</b> ${node.statusRelasi}</span>
-                                    <span><b>L/P:</b> ${node.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</span>
-                                    <span><b>Lahir:</b> ${this.formatDateID(node.tglLahir)}</span>
-                                    ${node.statusKehidupan === 'Wafat' ? `<span class="text-red-600"><b>Wafat:</b> ${this.getJavaneseDate(node.tglWafat)}</span>` : ''}
-                                    ${node.namaPasangan && node.namaPasangan !== '-' ? `<span><b>Pasangan:</b> ${node.namaPasangan}</span>` : ''}
-                                </div>
-                            </div>
-                        `;
+                        html += '<div class="mb-4 avoid-break border-b pb-3 ' + (isMain ? 'mt-6 bg-emerald-50/50 p-3 rounded' : 'ml-6 border-l-2 pl-4 border-emerald-100') + '">';
+                        html += '<h3 class="font-bold text-gray-800 ' + (isMain ? 'text-lg text-emerald-800' : 'text-md') + ' flex items-center gap-2">';
+                        html += '<span class="text-emerald-600">' + currentPrefix + '.</span> ' + node.namaLengkap;
+                        if (node.panggilan) html += ' (' + node.panggilan + ')';
+                        html += '</h3>';
+                        
+                        html += '<div class="text-xs text-gray-600 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">';
+                        html += '<span><b>Status:</b> ' + node.statusRelasi + '</span>';
+                        html += '<span><b>L/P:</b> ' + (node.jk === 'L' ? 'Laki-laki' : 'Perempuan') + '</span>';
+                        html += '<span><b>Lahir:</b> ' + self.formatDateID(node.tglLahir) + '</span>';
+                        if (node.statusKehidupan === 'Wafat') {
+                            html += '<span class="text-red-600"><b>Wafat:</b> ' + self.getJavaneseDate(node.tglWafat) + '</span>';
+                        }
+                        if (node.namaPasangan && node.namaPasangan !== '-') {
+                            html += '<span><b>Pasangan:</b> ' + node.namaPasangan + '</span>';
+                        }
+                        html += '</div></div>';
                         
                         if (node.children && node.children.length > 0) {
-                            html += `<div class="ml-2">${this.generateBookHTML(node.children, level + 1, currentPrefix)}</div>`;
+                            html += '<div class="ml-2">' + self.generateBookHTML(node.children, level + 1, currentPrefix) + '</div>';
                         }
                     });
                     return html;
                 },
-                openForm(mode, member = null) {
+                openForm: function(mode, member) {
                     this.formMode = mode;
                     if (mode === 'edit' && member) {
-                        this.formMember = Object.assign({}, member); 
+                        this.formMember = JSON.parse(JSON.stringify(member)); 
                     } else {
                         this.formMember = {
                             id: '', foto: '', namaLengkap: '', panggilan: '', jk: '', tempatLahir: '', tglLahir: '',
@@ -1433,52 +1458,57 @@
                     this.isFormOpen = true;
                 },
 
-                handleMemberFotoUpload(event) {
-                    const file = event.target.files[0];
+                handleMemberFotoUpload: function(event) {
+                    var file = event.target.files[0];
                     if (!file) return;
                     
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 300; 
-                            const scaleSize = MAX_WIDTH / img.width;
+                    var self = this;
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var img = new Image();
+                        img.onload = function() {
+                            var canvas = document.createElement('canvas');
+                            var MAX_WIDTH = 300; 
+                            var scaleSize = MAX_WIDTH / img.width;
                             canvas.width = MAX_WIDTH;
                             canvas.height = img.height * scaleSize;
                             
-                            const ctx = canvas.getContext('2d');
+                            var ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                             
-                            this.formMember.foto = canvas.toDataURL('image/jpeg', 0.7);
-                        }
+                            self.formMember.foto = canvas.toDataURL('image/jpeg', 0.7);
+                        };
                         img.src = e.target.result;
                     };
                     reader.readAsDataURL(file);
                 },
 
-                handleAcaraFotoUpload(event) {
-                    const files = Array.prototype.slice.call(event.target.files);
+                handleAcaraFotoUpload: function(event) {
+                    var files = [];
+                    for(var i = 0; i < event.target.files.length; i++) {
+                        files.push(event.target.files[i]);
+                    }
                     if (files.length > 5) {
-                        this.showAlert('Batas Foto', 'Maksimal 5 foto untuk satu acara agar memori tidak berat. Jika lebih, gunakan Link Google Drive.', 'warning');
+                        this.showAlert('Batas Foto', 'Maksimal 5 foto untuk satu acara. Jika lebih, gunakan Link Google Drive.', 'warning');
                         return;
                     }
                     
+                    var self = this;
                     this.formAcara.fotos = [];
-                    files.slice(0, 5).forEach((file) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            const img = new Image();
-                            img.onload = () => {
-                                const canvas = document.createElement('canvas');
-                                const MAX_WIDTH = 600; 
-                                const scaleSize = MAX_WIDTH / img.width;
-                                canvas.width = MAX_WIDTH;
+                    files.slice(0, 5).forEach(function(file) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var img = new Image();
+                            img.onload = function() {
+                                var canvas = document.createElement('canvas');
+                                var MAX_WIDTH = 400; 
+                                var scaleSize = Math.min(MAX_WIDTH / img.width, 1);
+                                canvas.width = img.width * scaleSize;
                                 canvas.height = img.height * scaleSize;
-                                const ctx = canvas.getContext('2d');
+                                var ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                                 
-                                this.formAcara.fotos.push(canvas.toDataURL('image/jpeg', 0.6));
+                                self.formAcara.fotos.push(canvas.toDataURL('image/jpeg', 0.5));
                             };
                             img.src = e.target.result;
                         };
@@ -1486,21 +1516,29 @@
                     });
                 },
 
-                saveMember() {
+                saveMember: function() {
                     this.isSaving = true;
+                    var self = this;
                     try {
+                        this.formMember._localTime = Date.now();
+
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
-                            this.familyData.push(Object.assign({}, this.formMember));
+                            this.familyData.push(JSON.parse(JSON.stringify(this.formMember)));
                         } else {
-                            const index = this.familyData.findIndex((item) => { return item.id === this.formMember.id });
+                            var index = -1;
+                            for (var i = 0; i < this.familyData.length; i++) {
+                                if (this.familyData[i].id === this.formMember.id) { index = i; break; }
+                            }
                             if (index !== -1) {
-                                this.familyData.splice(index, 1, Object.assign({}, this.formMember));
+                                this.familyData.splice(index, 1, JSON.parse(JSON.stringify(this.formMember)));
                             }
                         }
 
+                        safeSetStorage('silsilah_local_data', JSON.stringify(this.familyData));
+
                         if (this.appScriptUrl) {
-                            const payload = { action: this.formMode, data: this.formMember };
+                            var payload = { action: this.formMode, data: this.formMember };
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
@@ -1519,81 +1557,110 @@
                         this.isSaving = false;
                     }
                 },
-                deleteMember(member) {
-                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", () => {
-                        this.familyData = this.familyData.filter(function(m) { return m.id !== member.id });
 
-                        if(this.appScriptUrl && member.id && !String(member.id).startsWith('TMP_')) {
-                            fetch(this.appScriptUrl, {
+                deleteMember: function(member) {
+                    var self = this;
+                    this.showConfirm('Hapus Anggota', "Yakin ingin menghapus anggota ini secara permanen dari Aplikasi dan Database?", function() {
+                        
+                        self.deletedItems.push({ id: String(member.id), time: Date.now() });
+                        safeSetStorage('silsilah_deleted', JSON.stringify(self.deletedItems));
+
+                        var newFamily = [];
+                        for(var i=0; i<self.familyData.length; i++) {
+                            if (self.familyData[i].id !== member.id) newFamily.push(self.familyData[i]);
+                        }
+                        self.familyData = newFamily;
+                        
+                        safeSetStorage('silsilah_local_data', JSON.stringify(self.familyData));
+
+                        if(self.appScriptUrl && member.id && String(member.id).indexOf('TMP_') !== 0) {
+                            fetch(self.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify({ action: 'delete', id: String(member.id) })
                             }).catch(function(e) { console.error(e) });
                             
-                            this.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
+                            self.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
                         }
                     });
                 },
 
-                downloadDataExcel() {
+                downloadDataExcel: function() {
                     if(this.familyData.length === 0) {
                         this.showAlert('Kosong', 'Tidak ada data untuk di-download.', 'warning');
                         return;
                     }
                     
-                    const worksheet = XLSX.utils.json_to_sheet(this.familyData);
-                    const workbook = XLSX.utils.book_new();
+                    var worksheet = XLSX.utils.json_to_sheet(this.familyData);
+                    var workbook = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(workbook, worksheet, "Data_Keluarga");
                     
                     XLSX.writeFile(workbook, "Data_Silsilah_Bani_Dirin.xlsx");
                 },
 
-                async saveAcara() {
+                saveAcara: function() {
                     this.isSaving = true;
+                    var self = this;
                     try {
                         this.formAcara.id = "ACR_" + Date.now();
+                        this.formAcara._localTime = Date.now();
                         
-                        this.acaraData.push(Object.assign({}, this.formAcara));
+                        var newAcaraObj = JSON.parse(JSON.stringify(this.formAcara));
+                        this.acaraData.push(newAcaraObj);
+                        
+                        safeSetStorage('silsilah_acara', JSON.stringify(this.acaraData));
 
                         if (this.appScriptUrl) {
-                            const payload = { action: 'add_acara', data: this.formAcara };
-                            // Tunggu (await) sampai foto benar-benar selesai dikirim ke GDrive
-                            await fetch(this.appScriptUrl, {
+                            var payload = { action: 'add_acara', data: newAcaraObj };
+                            fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
+                            }).then(function() {
+                                self.finishSaveAcara();
+                            }).catch(function(e) {
+                                console.error(e);
+                                self.showAlert('Error', 'Gagal memproses unggahan.', 'error');
+                                self.isAcaraFormOpen = false;
+                                self.isSaving = false;
                             });
-                        }
-
-                        this.isAcaraFormOpen = false;
-                        safeSetStorage('silsilah_acara', JSON.stringify(this.acaraData));
-                        this.formAcara = { judul: '', tanggal: '', jenis: 'Foto / Galeri', gdriveLink: '', fotos: [] };
-                        this.showAlert('Berhasil', 'Acara dan foto berhasil diunggah ke Google Drive! Tampilan akan disinkronkan otomatis.', 'success');
-                        
-                        // Memuat ulang otomatis agar link GDrive tertarik ke layar
-                        if (this.appScriptUrl) {
-                            setTimeout(() => {
-                                this.loadFromSheet();
-                            }, 5000);
+                        } else {
+                            self.finishSaveAcara();
                         }
                     } catch(e) {
                         console.error(e);
-                        this.showAlert('Error', 'Gagal menghubungi server Google Drive.', 'error');
+                        this.showAlert('Error', 'Gagal memproses unggahan.', 'error');
                         this.isAcaraFormOpen = false;
-                    } finally {
                         this.isSaving = false;
                     }
                 },
+                
+                finishSaveAcara: function() {
+                    this.isAcaraFormOpen = false;
+                    this.formAcara = { judul: '', tanggal: '', jenis: 'Foto / Galeri', gdriveLink: '', fotos: [] };
+                    this.showAlert('Berhasil', 'Acara dan foto berhasil diunggah ke Server!', 'success');
+                    this.isSaving = false;
+                },
 
-                deleteAcara(acaraObj) {
-                    this.showConfirm('Hapus Acara', "Apakah Anda yakin ingin menghapus album acara ini?", () => {
-                        this.acaraData = this.acaraData.filter(function(a) { return a.id !== acaraObj.id });
-                        safeSetStorage('silsilah_acara', JSON.stringify(this.acaraData));
+                deleteAcara: function(acaraObj) {
+                    var self = this;
+                    this.showConfirm('Hapus Acara', "Apakah Anda yakin ingin menghapus album acara ini?", function() {
                         
-                        if(this.appScriptUrl && acaraObj.id) {
-                            fetch(this.appScriptUrl, {
+                        self.deletedItems.push({ id: String(acaraObj.id), time: Date.now() });
+                        safeSetStorage('silsilah_deleted', JSON.stringify(self.deletedItems));
+
+                        var newAcara = [];
+                        for(var i=0; i<self.acaraData.length; i++) {
+                            if (self.acaraData[i].id !== acaraObj.id) newAcara.push(self.acaraData[i]);
+                        }
+                        self.acaraData = newAcara;
+
+                        safeSetStorage('silsilah_acara', JSON.stringify(self.acaraData));
+                        
+                        if(self.appScriptUrl && acaraObj.id) {
+                            fetch(self.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
@@ -1604,7 +1671,7 @@
                     });
                 },
 
-                saveSettings() {
+                saveSettings: function() {
                     safeSetStorage('silsilah_gas_url', this.tempAppScriptUrl);
                     safeSetStorage('silsilah_csv_url', this.tempSheetUrl);
                     safeSetStorage('silsilah_csv_acara_url', this.tempSheetAcaraUrl);
@@ -1614,10 +1681,10 @@
                     this.loadFromSheet();
                     this.isSettingsOpen = false;
                 },
-                refreshData() {
+                refreshData: function() {
                     this.loadFromSheet();
                 },
-                loadFromSheet() {
+                loadFromSheet: function() {
                     if (!this.sheetUrl) {
                         this.sheetStatus = "Belum ada link spreadsheet. Menggunakan data bawaan.";
                         return;
@@ -1625,23 +1692,35 @@
                     
                     this.isRefreshing = true;
                     this.sheetStatus = "Mengambil data...";
+                    var self = this;
+                    var now = Date.now();
+
+                    // Bersihkan memori Hapus yang sudah lebih dari 5 menit
+                    var validDeleted = [];
+                    for(var x=0; x<this.deletedItems.length; x++) {
+                        if (now - this.deletedItems[x].time < 300000) {
+                            validDeleted.push(this.deletedItems[x]);
+                        }
+                    }
+                    this.deletedItems = validDeleted;
+                    safeSetStorage('silsilah_deleted', JSON.stringify(this.deletedItems));
                     
-                    const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'bypass=' + new Date().getTime();
+                    var fetchUrl = this.sheetUrl + (this.sheetUrl.indexOf('?') !== -1 ? '&' : '?') + 'bypass=' + new Date().getTime();
                     
                     // Ambil Data Anggota
                     Papa.parse(fetchUrl, {
                         download: true,
                         header: true,
-                        complete: (results) => {
-                            this.isRefreshing = false;
+                        complete: function(results) {
+                            self.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
                                 
-                                const validRawData = results.data.filter(function(row) { return row && typeof row === 'object' });
-                                const normalizedData = validRawData.map(row => {
-                                    const normRow = {};
-                                    for (const key in row) {
+                                var validRawData = results.data.filter(function(row) { return row && typeof row === 'object' });
+                                var normalizedData = validRawData.map(function(row) {
+                                    var normRow = {};
+                                    for (var key in row) {
                                         if (key) {
-                                            const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                                            var cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                                             
                                             if (cleanKey === 'id') normRow.id = row[key];
                                             else if (cleanKey === 'namalengkap') normRow.namaLengkap = row[key];
@@ -1667,42 +1746,124 @@
                                     return normRow;
                                 });
 
-                                const validData = normalizedData.filter(function(row) { return row && (row.id || row.namaLengkap) });
+                                // Blokir data yang ID-nya ada di daftar Hapus (dalam 5 menit terakhir)
+                                var validData = normalizedData.filter(function(row) { 
+                                    if (!row || (!row.id && !row.namaLengkap)) return false;
+                                    for(var k=0; k<self.deletedItems.length; k++) {
+                                        if (self.deletedItems[k].id === String(row.id)) return false;
+                                    }
+                                    return true; 
+                                });
                                 
                                 if(validData.length > 0){
-                                    this.familyData = validData;
-                                    this.sheetStatus = `Berhasil memuat ${validData.length} data dari Spreadsheet!`;
+                                    // SMART MERGE: Override CSV pakai memori lokal (foto/data) JIKA usia edit < 5 Menit
+                                    var mergedData = validData.map(function(csvItem) {
+                                        var localItem = null;
+                                        for(var i=0; i<self.familyData.length; i++) {
+                                            if(String(self.familyData[i].id) === String(csvItem.id)) {
+                                                localItem = self.familyData[i]; break;
+                                            }
+                                        }
+                                        
+                                        if (localItem && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                            return JSON.parse(JSON.stringify(localItem));
+                                        }
+                                        return csvItem;
+                                    });
+                                    
+                                    // Tambahkan data lokal yang BARU SAJA ditambah (< 5 menit) tapi CSV belum narik
+                                    self.familyData.forEach(function(localItem) {
+                                        var found = false;
+                                        for(var j=0; j<mergedData.length; j++){
+                                            if(String(mergedData[j].id) === String(localItem.id)){ found = true; break; }
+                                        }
+                                        if (!found && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                             mergedData.push(localItem);
+                                        }
+                                    });
+
+                                    self.familyData = mergedData;
+                                    safeSetStorage('silsilah_local_data', JSON.stringify(self.familyData));
+                                    self.sheetStatus = "Berhasil memuat " + validData.length + " data dari Spreadsheet!";
                                 } else {
-                                     this.sheetStatus = "Data ditarik, tapi struktur kolom tidak sesuai atau kosong.";
+                                     self.sheetStatus = "Data ditarik, tapi struktur kolom tidak sesuai atau kosong.";
                                 }
                             }
                         },
-                        error: (err) => {
-                            this.isRefreshing = false;
+                        error: function(err) {
+                            self.isRefreshing = false;
                             console.error(err);
-                            this.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan disetel Publik.";
+                            self.sheetStatus = "Gagal mengambil data. Pastikan link adalah format CSV dan disetel Publik.";
                         }
                     });
 
-                    // Ambil Data Acara
+                    // Ambil Data Acara (Pencegahan penimpaan dari sheet yang salah)
                     if (this.sheetAcaraUrl) {
-                        const fetchAcaraUrl = this.sheetAcaraUrl + (this.sheetAcaraUrl.includes('?') ? '&' : '?') + 'bypass=' + new Date().getTime();
+                        var fetchAcaraUrl = this.sheetAcaraUrl + (this.sheetAcaraUrl.indexOf('?') !== -1 ? '&' : '?') + 'bypass=' + new Date().getTime();
                         Papa.parse(fetchAcaraUrl, {
                             download: true,
                             header: true,
-                            complete: (results) => {
+                            complete: function(results) {
                                 if (results.data && Array.isArray(results.data)) {
-                                    const rawAcara = results.data.filter(function(row) { return row && typeof row === 'object' });
-                                    this.acaraData = rawAcara.filter(function(row) { return row.id || row.Id || row.ID }).map(function(row) {
-                                        return {
-                                            id: row.id || row.Id || row.ID,
-                                            judul: row.judul || row.Judul,
-                                            tanggal: row.tanggal || row.Tanggal,
-                                            jenis: row.jenis || row.Jenis,
-                                            gdriveLink: row.gdriveLink || row.GdriveLink || row.gdrivelink,
-                                            fotos: (row.fotos || row.Fotos) ? (row.fotos || row.Fotos).split(',').filter(function(f){ return f }) : []
-                                        };
-                                    });
+                                    
+                                    var fields = results.meta.fields || [];
+                                    var isAcaraSheet = false;
+                                    for(var k=0; k<fields.length; k++) {
+                                        if (fields[k] && fields[k].toLowerCase() === 'judul') { isAcaraSheet = true; break; }
+                                    }
+                                    
+                                    if (isAcaraSheet) {
+                                        var rawAcara = results.data.filter(function(row) { return row && typeof row === 'object' });
+                                        
+                                        // Blokir Acara yang barusan dihapus
+                                        var fetchedAcara = rawAcara.filter(function(row) { 
+                                            if(!row.id && !row.Id && !row.ID) return false;
+                                            var cid = String(row.id || row.Id || row.ID);
+                                            for(var x=0; x<self.deletedItems.length; x++) {
+                                                if (self.deletedItems[x].id === cid) return false;
+                                            }
+                                            return true;
+                                        }).map(function(row) {
+                                            var rowFotosStr = String(row.fotos || row.Fotos || '');
+                                            var rowFotosArr = rowFotosStr.split(',').filter(function(f){ return f.trim() !== '' });
+                                            return {
+                                                id: row.id || row.Id || row.ID,
+                                                judul: row.judul || row.Judul,
+                                                tanggal: row.tanggal || row.Tanggal,
+                                                jenis: row.jenis || row.Jenis,
+                                                gdriveLink: row.gdriveLink || row.GdriveLink || row.gdrivelink,
+                                                fotos: rowFotosArr
+                                            };
+                                        });
+
+                                        // SMART MERGE ACARA (< 5 Menit Override)
+                                        var mergedAcara = fetchedAcara.map(function(csvItem) {
+                                            var localItem = null;
+                                            for(var i=0; i<self.acaraData.length; i++) {
+                                                if (String(self.acaraData[i].id) === String(csvItem.id)) { localItem = self.acaraData[i]; break; }
+                                            }
+
+                                            if (localItem && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                                return JSON.parse(JSON.stringify(localItem));
+                                            }
+                                            return csvItem;
+                                        });
+
+                                        self.acaraData.forEach(function(localItem) {
+                                            var found = false;
+                                            for(var j=0; j<mergedAcara.length; j++) {
+                                                if(String(mergedAcara[j].id) === String(localItem.id)) { found=true; break;}
+                                            }
+                                            if(!found && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                                mergedAcara.push(localItem);
+                                            }
+                                        });
+
+                                        self.acaraData = mergedAcara;
+                                        safeSetStorage('silsilah_acara', JSON.stringify(self.acaraData));
+                                    } else {
+                                        console.warn("Link CSV Acara tidak valid.");
+                                    }
                                 }
                             }
                         });
@@ -1715,18 +1876,18 @@
             props: ['node'],
             template: '#org-node-template',
             methods: {
-                getSafeImg(url) {
+                getSafeImg: function(url) {
                     if (!url || typeof url !== 'string') return '';
-                    if (url.startsWith('data:')) return url; 
+                    if (url.indexOf('data:') === 0) return url; 
                     
-                    let fileId = '';
-                    if (url.includes('drive.google.com')) {
-                        const match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                    var fileId = '';
+                    if (url.indexOf('drive.google.com') !== -1) {
+                        var match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                         if (match) fileId = match[1];
                     }
                     
                     if (fileId) {
-                        return `https://lh3.googleusercontent.com/d/${fileId}`;
+                        return 'https://lh3.googleusercontent.com/d/' + fileId;
                     }
                     return url; 
                 }
