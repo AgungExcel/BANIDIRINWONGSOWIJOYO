@@ -238,7 +238,11 @@
                                     <td class="p-3 text-center text-gray-500">{{ index + 1 }}</td>
                                     <td class="p-3 text-center">
                                         <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
-                                            <img v-if="item && item.foto" :src="item.foto" class="w-full h-full object-cover">
+                                            <!-- SOLUSI FOTO: Fungsi getSafeImageUrl dipanggil untuk mem-bypass pemblokiran Google Drive -->
+                                            <template v-if="item && item.foto">
+                                                <img :src="getSafeImageUrl(item.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                <i class="fas fa-user text-gray-400 text-xs" style="display:none;"></i>
+                                            </template>
                                             <i v-else class="fas fa-user text-gray-400 text-xs"></i>
                                         </div>
                                     </td>
@@ -366,7 +370,10 @@
                     <div class="flex flex-col md:flex-row gap-8">
                         <div class="w-full md:w-1/4 flex flex-col items-center text-center">
                             <div class="w-24 h-24 rounded-full border-2 border-[#1e7e53] shadow-md overflow-hidden mb-3 bg-gray-100 flex items-center justify-center relative group">
-                                <img v-if="selectedMember && selectedMember.foto" :src="selectedMember.foto" class="w-full h-full object-cover">
+                                <template v-if="selectedMember && selectedMember.foto">
+                                    <img :src="getSafeImageUrl(selectedMember.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <i class="fas fa-user text-5xl text-gray-400" style="display:none;"></i>
+                                </template>
                                 <i v-else-if="selectedMember && selectedMember.jk === 'L'" class="fas fa-user text-5xl text-gray-400"></i>
                                 <i v-else class="fas fa-user-tie text-5xl text-gray-400"></i>
                             </div>
@@ -465,7 +472,7 @@
             </div>
         </div>
 
-        <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
+        <!-- MODAL: FORM TAMBAH / EDIT DATA -->
         <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
             <div class="bg-[#f3f4f6] rounded-2xl shadow-2xl w-full max-w-4xl my-6 overflow-hidden">
                 <div class="bg-white px-8 py-5 flex items-center border-b border-gray-200">
@@ -562,7 +569,6 @@
                                 <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
                                 <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
                             </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Ini menentukan di bawah siapa orang ini akan muncul dalam garis bagan pohon.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                             <div>
@@ -605,11 +611,12 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil (Otomatis Kompres)</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative">
-                                        <!-- TAMPILAN PREVIEW FOTO -->
-                                        <img v-if="formMember.foto" :src="formMember.foto" class="w-full h-full object-cover">
+                                        <template v-if="formMember.foto">
+                                            <img :src="getSafeImageUrl(formMember.foto)" class="w-full h-full object-cover">
+                                        </template>
                                         <i v-else class="fas fa-image text-gray-400 mt-2.5 ml-3"></i>
                                     </div>
                                     <input type="file" accept="image/*" @change="handleFotoUpload" class="w-full border border-gray-300 rounded-md p-1.5 text-sm file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
@@ -676,14 +683,17 @@
 
     </div>
 
-    <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah Modern CSS) -->
+    <!-- KOMPONEN VUE: ORG NODE (Pohon Silsilah) -->
     <script type="text/x-template" id="org-node-template">
         <li v-if="node">
             <div class="z-10 inline-block bg-white border-2 border-emerald-600 rounded-lg shadow-md px-4 pt-2 pb-3 m-2 min-w-[150px] max-w-[200px] text-center relative group cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300" @click="$emit('show-detail', node)">
                 <div class="w-full h-1.5 absolute top-0 left-0 rounded-t-sm" :class="node.jk === 'L' ? 'bg-[#0d6efd]' : 'bg-[#dc3545]'"></div>
                 
                 <div class="w-14 h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-2 mt-2">
-                    <img v-if="node && node.foto" :src="node.foto" class="w-full h-full object-cover">
+                    <template v-if="node && node.foto">
+                        <img :src="$root.getSafeImageUrl(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <i class="fas fa-user text-gray-400 text-2xl" style="display:none;"></i>
+                    </template>
                     <i v-else class="fas fa-user text-gray-400 text-2xl"></i>
                 </div>
 
@@ -694,7 +704,6 @@
                 </span>
             </div>
 
-            <!-- Rekursif Anak-anaknya -->
             <ul v-if="node.children && node.children.length > 0">
                 <org-node v-for="(child, index) in node.children" :key="child && child.id ? child.id : index" :node="child" @show-detail="$emit('show-detail', $event)"></org-node>
             </ul>
@@ -734,7 +743,6 @@
                         show: false, title: '', message: '', type: 'info', isConfirm: false, onConfirm: null
                     },
                     
-                    // KITA GUNAKAN PENYIMPANAN LOCALSTORAGE AGAR BISA DISIMPAN MELALUI UI MODAL
                     sheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
                     tempSheetUrl: localStorage.getItem('silsilah_csv_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
                     
@@ -772,7 +780,6 @@
                     const roots = validData.filter(item => {
                         const pid = item.parentId ? String(item.parentId).trim() : "";
                         const myId = item.id ? String(item.id).trim() : "";
-                        // LOGIKA ANTI-ERROR: Jadikan root jika tidak punya parent, parentnya strip (-), parent = dirinya sendiri, atau parentnya tidak terdaftar di sistem
                         return pid === "" || pid === "-" || pid === myId || !allIds.has(pid);
                     });
 
@@ -881,6 +888,23 @@
                 setTimeout(() => { this.renderCharts(); }, 500);
             },
             methods: {
+                // BYPASS PROXY GOOGLE DRIVE UNTUK MENCEGAH GAMBAR ERROR (HOTLINKING BLOCK)
+                getSafeImageUrl(url) {
+                    if (!url) return '';
+                    if (url.startsWith('data:')) return url; 
+                    
+                    let fileId = '';
+                    if (url.includes('drive.google.com')) {
+                        const match = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                        if (match) fileId = match[1];
+                    }
+                    
+                    if (fileId) {
+                        return `https://lh3.googleusercontent.com/d/${fileId}`;
+                    }
+                    return url; 
+                },
+
                 showAlert(title, message, type = 'info') {
                     this.customDialog = { show: true, title, message, type, isConfirm: false, onConfirm: null };
                 },
@@ -1042,17 +1066,14 @@
                     try {
                         if (this.formMode === 'add') {
                             this.formMember.id = "ID_" + Date.now();
-                            // Update UI segera
                             this.familyData.push({ ...this.formMember });
                         } else {
-                            // Update UI segera
                             const index = this.familyData.findIndex(item => item.id === this.formMember.id);
                             if (index !== -1) {
                                 this.familyData.splice(index, 1, { ...this.formMember });
                             }
                         }
 
-                        // Kirim data ke Apps Script secara fire-and-forget
                         if (this.appScriptUrl) {
                             const payload = { action: this.formMode, data: this.formMember };
                             fetch(this.appScriptUrl, {
@@ -1066,7 +1087,6 @@
                         this.showAlert('Disimpan', 'Aplikasi sedang memperbarui Data di Server dan akan tersinkronisasi dalam 5 detik secara otomatis.', 'success');
                         this.isFormOpen = false;
 
-                        // Jeda agar Google Drive & Sheet memproses foto, lalu sinkronisasi ulang
                         if(this.appScriptUrl){
                             setTimeout(() => {
                                 this.loadFromSheet();
@@ -1098,8 +1118,6 @@
                                 console.error(e);
                             }
                         }
-                        
-                        // Menghapus langsung dari tampilan layar
                         this.familyData = this.familyData.filter(m => m.id !== member.id);
                     });
                 },
@@ -1153,7 +1171,6 @@
                     this.isRefreshing = true;
                     this.sheetStatus = "Mengambil data...";
                     
-                    // Bypass cache mutlak dengan waktu dan angka acak agar selalu baru
                     const fetchUrl = this.sheetUrl + (this.sheetUrl.includes('?') ? '&' : '?') + 'bypass=' + new Date().getTime();
                     
                     Papa.parse(fetchUrl, {
@@ -1163,12 +1180,10 @@
                             this.isRefreshing = false;
                             if (results.data && Array.isArray(results.data)) {
                                 
-                                // NORMALISASI DATA OTOMATIS: Anti-Error huruf kapital & karakter khusus di Google Sheet
                                 const normalizedData = results.data.map(row => {
                                     const normRow = {};
                                     for (const key in row) {
                                         if (key) {
-                                            // Menghapus spasi & simbol dari header, ubah jadi huruf kecil murni
                                             const cleanKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                                             
                                             if (cleanKey === 'id') normRow.id = row[key];
@@ -1185,7 +1200,6 @@
                                             else if (cleanKey === 'statuspernikahan') normRow.statusPernikahan = row[key];
                                             else if (cleanKey === 'namapasangan') normRow.namaPasangan = row[key];
                                             else if (cleanKey === 'alamat') normRow.alamat = row[key];
-                                            // Tangani noHp atau nohp
                                             else if (cleanKey === 'nohp') normRow.noHp = row[key];
                                             else if (cleanKey === 'statusrelasi') normRow.statusRelasi = row[key];
                                             else if (cleanKey === 'parentid') normRow.parentId = row[key];
