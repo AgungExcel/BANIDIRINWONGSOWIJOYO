@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silsilah Digital - Bani Dirin Wongso Wijoyo</title>
     
+    <!-- Favicon Mbah Dirin -->
+    <link rel="icon" href="mbah dirin.png" type="image/png">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -326,7 +329,7 @@
             <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-link text-emerald-600 mr-2"></i>Sumber Data Spreadsheet</h3>
                 <p class="text-sm text-gray-600 mb-4 leading-relaxed">
-                    Untuk mengubah data kapan saja, buat file Google Sheets, isi dengan struktur kolom yang sesuai, lalu klik <b>File > Share > Publish to web</b>. Pilih format <b>CSV</b> dan tempel linknya di bawah ini.
+                    Aplikasi ini sudah diatur secara bawaan untuk membaca data dari link Spreadsheet keluarga Bani Dirin. Jika Anda membuat sheet baru, Anda dapat menggantinya di bawah ini.
                 </p>
                 <input type="text" v-model="tempSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX.../pub?output=csv" class="w-full border p-3 rounded-md mb-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                 <div class="flex justify-end gap-2">
@@ -418,7 +421,7 @@
                 return {
                     activeTab: 'home',
                     searchQuery: '',
-                    mainPhoto: 'https://via.placeholder.com/300x300.png?text=Bani+Dirin', // Fallback Icon
+                    mainPhoto: 'Mbah Dirin New.png', // Foto Beranda Utama
                     familyData: [...defaultData],
                     acaraData: JSON.parse(localStorage.getItem('silsilah_acara')) || defaultAcara,
                     
@@ -427,9 +430,9 @@
                     isSettingsOpen: false,
                     isAcaraFormOpen: false,
                     
-                    // Spreadsheet Integration
-                    sheetUrl: localStorage.getItem('silsilah_sheet_url') || '',
-                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url') || '',
+                    // Spreadsheet Integration (Link Spreadsheet Default Disematkan)
+                    sheetUrl: localStorage.getItem('silsilah_sheet_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
+                    tempSheetUrl: localStorage.getItem('silsilah_sheet_url') || 'https://docs.google.com/spreadsheets/d/18RRgQGQLRUb_OFftbyMcLPGvVIRAOuvwydnrzAYLzuo/export?format=csv',
                     sheetStatus: '',
 
                     formAcara: { judul: '', tanggal: '', jenis: 'Foto (Folder)', gdriveLink: '' }
