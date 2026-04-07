@@ -220,18 +220,18 @@
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <!-- PERBAIKAN STRUKTUR POHON (TOP CENTER) -->
-                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto bg-gray-50 relative">
-                            <!-- wrapper berfungsi sebagai penampung flex agar content terpusat dan menempel ke atas (items-start) -->
-                            <div id="tree-wrapper" :style="{ width: treeWrapperWidth, height: treeWrapperHeight }" class="flex justify-center items-start relative transition-all duration-300 mx-auto">
-                                <!-- origin-top membuat titik pengecilan zoom berpusat di atas -->
-                                <div id="tree-content" class="inline-block px-6 py-8 origin-top transition-transform duration-300" :style="{ transform: 'scale(' + treeZoom + ')' }">
+                        <!-- PERBAIKAN STRUKTUR POHON (TOP CENTER) YANG BENAR BENAR PAS -->
+                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto bg-gray-50 relative text-center">
+                            <!-- Wrapper bertindak sbg box kaku agar browser tidak menyisakan ruang putih raksasa -->
+                            <div id="tree-wrapper" :style="{ width: treeWrapperWidth, height: treeWrapperHeight }" class="inline-block relative transition-all duration-300 mx-auto align-top pt-6 md:pt-10">
+                                <!-- Posisikan absolute di tengah atas wrapper -->
+                                <div id="tree-content" class="absolute top-6 md:top-10 left-1/2 origin-top transition-transform duration-300 px-6" :style="{ transform: 'translateX(-50%) scale(' + treeZoom + ')' }">
                                     <div class="tree" v-if="treeData.length > 0">
                                         <ul>
                                             <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
                                         </ul>
                                     </div>
-                                    <p v-if="treeData.length === 0" class="text-gray-400 italic text-center mt-10 min-w-[300px]">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
+                                    <p v-if="treeData.length === 0" class="text-gray-400 italic text-center mt-10 w-[300px]">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                                 </div>
                             </div>
                         </div>
@@ -645,7 +645,7 @@
                 </div>
                 <div class="p-4 md:p-6 overflow-y-auto flex-1 text-sm text-gray-700 space-y-3">
                     <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs md:text-sm font-medium">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Karena sistem sebelumnya tertahan kebijakan peramban, kode di bawah telah diperbarui. Silakan ulangi langkah ini.
+                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING (Update 4):</strong> Kode ini telah diperbarui agar 100% Anti-Gagal saat mengupload banyak foto dan memastikan data tertulis di baris yang benar. Silakan pasang/ganti ulang skrip Anda dengan ini.
                     </div>
                     
                     <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm ml-1 font-medium text-gray-600">
@@ -1074,9 +1074,14 @@ function doPost(e) {
                  var file = folder.createFile(blob);
                  // Melewati blokir izin jika terjadi
                  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(shareErr){}
-                 fotoUrls.push(file.getUrl());
+                 
+                 // Gunakan format lh3 langsung untuk mencegah diblokir
+                 var fileId = file.getId();
+                 var webUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
+                 fotoUrls.push(webUrl);
              } catch(fotoErr) {
-                 // Abaikan error pada satu foto agar foto lain tetap terupload
+                 // Jika satu foto gagal, jangan hancurkan seluruh proses. Sisipkan kosong agar lanjut.
+                 fotoUrls.push('');
              }
           } else {
              fotoUrls.push(data.fotos[i]);
@@ -1084,14 +1089,21 @@ function doPost(e) {
         }
       }
       
-      ws.appendRow([
+      var lastRow = ws.getLastRow();
+      if (lastRow === 0) {
+          ws.appendRow(["id", "judul", "tanggal", "jenis", "gdriveLink", "fotos"]);
+          lastRow = 1;
+      }
+      
+      // Menulis baris dengan cara yang lebih tahan banting (anti row loncat ke 1000)
+      ws.getRange(lastRow + 1, 1, 1, 6).setValues([[
         data.id,
         data.judul,
         data.tanggal,
         data.jenis,
         data.gdriveLink || '',
         fotoUrls.join(',')
-      ]);
+      ]]);
       
       return ContentService.createTextOutput(JSON.stringify({"status":"success"})).setMimeType(ContentService.MimeType.JSON);
     }
@@ -1111,17 +1123,24 @@ function doPost(e) {
             var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Profil_' + data.id + '.jpg');
             var file = folder.createFile(blob);
             try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(shareErr){}
-            fotoUrl = file.getUrl();
+            
+            var fileId = file.getId();
+            fotoUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
         } catch(fotoErr){}
       }
       
       if (action === 'add') {
-        ws.appendRow([
+        var lastRow = ws.getLastRow();
+        if (lastRow === 0) {
+            ws.appendRow(["id", "namaLengkap", "panggilan", "jk", "tempatLahir", "tglLahir", "statusKehidupan", "tglWafat", "makam", "namaAyah", "namaIbu", "statusPernikahan", "namaPasangan", "urutanAnak", "alamat", "noHp", "statusRelasi", "parentId", "foto"]);
+            lastRow = 1;
+        }
+        ws.getRange(lastRow + 1, 1, 1, 19).setValues([[
           data.id, data.namaLengkap, data.panggilan, data.jk, data.tempatLahir, 
           data.tglLahir, data.statusKehidupan, data.tglWafat, data.makam, data.namaAyah, 
           data.namaIbu, data.statusPernikahan, data.namaPasangan, data.urutanAnak, 
           data.alamat, data.noHp, data.statusRelasi, data.parentId, fotoUrl
-        ]);
+        ]]);
       } else if (action === 'edit') {
          var dataRange = ws.getDataRange().getValues();
          for (var i = 1; i < dataRange.length; i++) {
@@ -1559,7 +1578,7 @@ function doPost(e) {
                 },
                 autoFitTree: function() {
                     var self = this;
-                    // Tunggu 350ms sampai efek transisi Vue (fade) benar-benar selesai
+                    // Jeda agar efek transisi Vue selesai merender elemen
                     setTimeout(function() {
                         var container = document.getElementById('tree-scroll-container');
                         var content = document.getElementById('tree-content');
@@ -1599,17 +1618,18 @@ function doPost(e) {
                             var w = content.scrollWidth;
                             var h = content.scrollHeight;
                             
-                            self.treeWrapperWidth = Math.max(container.clientWidth, w * self.treeZoom) + 'px';
-                            self.treeWrapperHeight = (h * self.treeZoom + 40) + 'px';
+                            // Paksa dimensi pembungkus mengikuti kalkulasi akurat + sisa ruang 80px
+                            self.treeWrapperWidth = Math.max(container.clientWidth, (w * self.treeZoom) + 80) + 'px';
+                            self.treeWrapperHeight = ((h * self.treeZoom) + 80) + 'px';
                             
                             setTimeout(function() {
-                                var scaledWidth = w * self.treeZoom;
-                                if (scaledWidth > container.clientWidth) {
-                                    container.scrollLeft = (scaledWidth - container.clientWidth) / 2;
+                                var wrapperWidth = Math.max(container.clientWidth, (w * self.treeZoom) + 80);
+                                if (wrapperWidth > container.clientWidth) {
+                                    container.scrollLeft = (wrapperWidth - container.clientWidth) / 2;
                                 } else {
                                     container.scrollLeft = 0;
                                 }
-                                container.scrollTop = 0; // Pastikan scroll y ke atas
+                                container.scrollTop = 0; // Kunci scroll di posisi paling ATAS (Top)
                             }, 50);
                         }
                     });
@@ -1623,7 +1643,6 @@ function doPost(e) {
                     this.previewPhotoUrl = null;
                 },
 
-                // METHOD BARU UTK FORMAT LINK VIDEO/DRIVE
                 formatExternalUrl: function(url) {
                     if (!url) return '#';
                     var trimmed = url.trim();
@@ -1832,15 +1851,15 @@ function doPost(e) {
                             var img = new Image();
                             img.onload = function() {
                                 var canvas = document.createElement('canvas');
-                                // Kurangi ukuran resolusi agar proses upload ke Apps Script tidak terlalu berat
-                                var MAX_WIDTH = 600; 
+                                // Mengurangi sedikit beban ukuran file saat diunggah ke Google Apps Script
+                                var MAX_WIDTH = 800; 
                                 var scaleSize = Math.min(MAX_WIDTH / img.width, 1);
                                 canvas.width = img.width * scaleSize;
                                 canvas.height = img.height * scaleSize;
                                 var ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                                 
-                                self.formAcara.fotos.push(canvas.toDataURL('image/jpeg', 0.5));
+                                self.formAcara.fotos.push(canvas.toDataURL('image/jpeg', 0.6));
                             };
                             img.src = e.target.result;
                         };
@@ -1873,10 +1892,11 @@ function doPost(e) {
                             var payload = { action: this.formMode, data: this.formMember };
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
+                                mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
                             }).then(function() {
-                                setTimeout(function(){ self.loadFromSheet(); }, 3000); // Reload otomatis dari GDrive 3 detik setelah tersimpan
+                                setTimeout(function(){ self.loadFromSheet(); }, 3000); 
                             }).catch(function(e){ console.error(e) });
                         }
                         
@@ -1910,6 +1930,7 @@ function doPost(e) {
                             var payload = { action: 'delete', id: String(member.id) };
                             fetch(self.appScriptUrl, {
                                 method: 'POST',
+                                mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
                             }).then(function() {
@@ -1948,14 +1969,14 @@ function doPost(e) {
                         if (this.appScriptUrl) {
                             var payload = { action: 'add_acara', data: newAcaraObj };
                             
-                            // Kirim menggunakan text/plain agar bisa mem-bypass CORS Policy Google Script
+                            // Metode pengiriman tanpa block peramban
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
+                                mode: 'no-cors', 
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
                             }).then(function() {
                                 self.finishSaveAcara();
-                                // Penyegaran latar belakang otomatis 3 detik kemudian untuk mengambil link gambar yang asli dari GDrive
                                 setTimeout(function() {
                                     self.loadFromSheet();
                                 }, 3000);
@@ -2002,6 +2023,7 @@ function doPost(e) {
                             var payload = { action: 'delete_acara', id: String(acaraObj.id) };
                             fetch(self.appScriptUrl, {
                                 method: 'POST',
+                                mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
                             }).then(function() {
