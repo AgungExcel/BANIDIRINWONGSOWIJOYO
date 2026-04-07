@@ -279,12 +279,15 @@
                                 <tr v-for="(item, index) in filteredData" :key="item && item.id ? item.id : index" class="border-b hover:bg-gray-50 transition-colors">
                                     <td class="p-2 md:p-3 text-center text-gray-500">{{ index + 1 }}</td>
                                     <td class="p-2 md:p-3 text-center">
-                                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center">
+                                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-gray-200 mx-auto border flex items-center justify-center relative">
                                             <template v-if="item && item.foto">
                                                 <img :src="getSafeImageUrl(item.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                                 <i class="fas fa-user text-xs" :class="item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                             </template>
                                             <i v-else class="fas fa-user text-xs" :class="item && item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
+                                            <div v-if="item && item.foto && item.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Masih di penyimpanan lokal (Menunggu Sync ke GDrive)">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="p-2 md:p-3 font-medium text-gray-800">{{ item && item.namaLengkap }}</td>
@@ -342,6 +345,10 @@
                                 <div v-if="acara.fotos && acara.fotos.length > 0" class="flex gap-2 overflow-x-auto py-2 mb-2 scrollbar-hide">
                                     <a v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :href="getSafeImageUrl(foto)" target="_blank" class="flex-shrink-0 relative group block rounded-md border border-gray-200 overflow-hidden shadow-sm">
                                         <img :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover group-hover:scale-110 transition-transform duration-300">
+                                        <!-- BADGE LOKAL SYNC -->
+                                        <div v-if="foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Masih di penyimpanan lokal (Menunggu Sync ke GDrive)">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
                                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
                                             <i class="fas fa-external-link-alt text-white opacity-0 group-hover:opacity-100 text-[10px]"></i>
                                         </div>
@@ -492,6 +499,9 @@
                             <div class="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-[#1e7e53] shadow-md overflow-hidden mb-2 md:mb-3 bg-gray-100 flex items-center justify-center relative group">
                                 <template v-if="selectedMember && selectedMember.foto">
                                     <img :src="getSafeImageUrl(selectedMember.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div v-if="selectedMember.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sync ke GDrive">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
                                     <i class="fas fa-user text-4xl md:text-5xl" :class="selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                 </template>
                                 <i v-else class="fas fa-user text-4xl md:text-5xl" :class="selectedMember && selectedMember.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
@@ -615,7 +625,7 @@
                 </div>
                 <div class="p-4 md:p-6 overflow-y-auto flex-1 text-sm text-gray-700 space-y-3">
                     <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs md:text-sm font-medium">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Jika foto Acara atau Profil Anda gagal masuk/terupload ke Google Drive, itu berarti Backend Google Apps Script (GAS) Anda belum bisa memproses format gambar (Base64). Silakan ikuti panduan di bawah:
+                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Jika terdapat logo <i class="fas fa-clock text-yellow-500"></i> pada foto Anda, berarti foto tersebut belum tersinkronisasi ke Google Drive. Pastikan Anda melakukan langkah di bawah ini:
                     </div>
                     
                     <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm ml-1 font-medium text-gray-600">
@@ -875,12 +885,17 @@
             <div class="z-10 inline-block bg-white border-2 border-emerald-600 rounded-lg shadow-md px-3 pt-2 pb-3 m-1.5 md:px-4 md:m-2 min-w-[120px] max-w-[160px] md:min-w-[150px] md:max-w-[200px] text-center relative group cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300" @click="$emit('show-detail', node)">
                 <div class="w-full h-1 md:h-1.5 absolute top-0 left-0 rounded-t-sm" :class="node.jk === 'L' ? 'bg-[#0d6efd]' : 'bg-[#dc3545]'"></div>
                 
-                <div class="w-10 h-10 md:w-14 md:h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-1.5 md:mb-2 mt-1 md:mt-2">
+                <div class="w-10 h-10 md:w-14 md:h-14 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 shadow-inner overflow-hidden flex items-center justify-center mb-1.5 md:mb-2 mt-1 md:mt-2 relative">
                     <template v-if="node && node.foto">
                         <img :src="getSafeImg(node.foto)" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <i class="fas fa-user text-xl md:text-2xl" :class="node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'" style="display:none;"></i>
                     </template>
                     <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
+                    
+                    <!-- BADGE LOKAL PADA POHON JIKA FOTO BELUM SYNC -->
+                    <div v-if="node && node.foto && node.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sync ke GDrive">
+                        <i class="fas fa-clock"></i>
+                    </div>
                 </div>
 
                 <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight mb-0.5 md:mb-1 px-1 break-words whitespace-normal">{{ node.namaLengkap }}</h3>
@@ -996,6 +1011,12 @@
 
     // 🔴 GANTI DENGAN ID FOLDER GOOGLE DRIVE ANDA (Folder harus Public)
     var folderId = "ID_FOLDER_GDRIVE_ANDA"; 
+    var folder;
+    try {
+      folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
+    } catch(err) {
+      folder = DriveApp.getRootFolder();
+    }
     
     // --- 1. SIMPAN DATA ACARA & FOTO KE GDRIVE ---
     if (action === 'add_acara') {
@@ -1006,15 +1027,17 @@
       }
       
       var fotoUrls = [];
-      var folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
-      
       if (data.fotos && data.fotos.length > 0) {
         for (var i = 0; i < data.fotos.length; i++) {
-          var base64 = data.fotos[i].split(',')[1];
-          var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Acara_' + data.id + '_' + i + '.jpg');
-          var file = folder.createFile(blob);
-          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-          fotoUrls.push(file.getUrl());
+          if (data.fotos[i].indexOf('data:image') === 0) {
+             var base64 = data.fotos[i].split(',')[1];
+             var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Acara_' + data.id + '_' + i + '.jpg');
+             var file = folder.createFile(blob);
+             file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+             fotoUrls.push(file.getUrl());
+          } else {
+             fotoUrls.push(data.fotos[i]);
+          }
         }
       }
       
@@ -1040,7 +1063,6 @@
       
       var fotoUrl = data.foto || '';
       if (fotoUrl.indexOf('data:image') === 0) {
-        var folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
         var base64 = data.foto.split(',')[1];
         var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Profil_' + data.id + '.jpg');
         var file = folder.createFile(blob);
@@ -1490,16 +1512,16 @@
                 },
                 autoFitTree: function() {
                     var self = this;
-                    // Beri jeda panjang (150ms) agar elemen Tree yang disembunyikan oleh v-if sudah benar-benar selesai dirender oleh browser
+                    // Tunggu 350ms sampai efek transisi Vue (fade) benar-benar selesai merender elemen
                     setTimeout(function() {
                         var container = document.getElementById('tree-scroll-container');
                         var content = document.getElementById('tree-content');
                         if (!container || !content) return;
                         
-                        // Reset zoom agar ukuran yang terdeteksi adalah ukuran asli
+                        // Reset zoom agar ukuran yang terdeteksi adalah ukuran asli (tanpa skew)
                         self.treeZoom = 1;
                         
-                        // Force DOM reflow agar browser mereset ukuran
+                        // Memaksa DOM untuk menata ulang lebar (Reflow) sebelum dihitung
                         void content.offsetWidth;
                         
                         setTimeout(function() {
@@ -1508,28 +1530,34 @@
                             var containerHeight = container.clientHeight;
                             var contentHeight = content.scrollHeight;
                             
+                            // Hitung scale otomatis jika lebar/tinggi silsilah melebihi layar
                             if (contentWidth > containerWidth || contentHeight > containerHeight) {
-                                // Sisakan 40px padding sebagai ruang lega
+                                // Sisakan margin (padding) 40px agar tidak terlalu mepet
                                 var scaleX = (containerWidth - 40) / contentWidth;
                                 var scaleY = (containerHeight - 40) / contentHeight;
                                 var bestScale = Math.min(scaleX, scaleY, 1);
                                 
-                                self.treeZoom = Math.max(bestScale, 0.15); // Minimal zoom 15%
+                                // Batasi minimum zoom 15% agar silsilah masih bisa terlihat (tidak sekecil debu)
+                                self.treeZoom = Math.max(bestScale, 0.15); 
                             } else {
                                 self.treeZoom = 1;
                             }
                             
-                            // Tunggu transisi zoom selesai lalu pas-kan ke tengah
+                            // Setelah Zoom diset, tunggu pergerakan CSS nya selesai (100ms) lalu bawa scroll ke tengah
                             setTimeout(function() {
                                 self.centerTree();
-                            }, 150);
-                        }, 100);
-                    }, 150);
+                            }, 100);
+                        }, 50);
+                    }, 350); 
                 },
                 centerTree: function() {
                     var container = document.getElementById('tree-scroll-container');
-                    if (container) {
-                        var scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+                    var content = document.getElementById('tree-content');
+                    if (container && content) {
+                        // Menggunakan getBoundingClientRect agar mendapat lebar akurat yang SUDAH di-scale/zoom
+                        var scaledWidth = content.getBoundingClientRect().width;
+                        var scrollLeft = (scaledWidth - container.clientWidth) / 2;
+                        
                         if (scrollLeft > 0) {
                             container.scrollLeft = scrollLeft;
                         } else {
@@ -2011,6 +2039,9 @@
                                         }
                                         
                                         if (localItem && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                            // Jika di CSV ternyata foto SUDAH sukses menjadi link http Google Drive, Pakai dari CSV Saja.
+                                            if (csvItem.foto && csvItem.foto.indexOf('http') === 0) return csvItem;
+                                            
                                             return JSON.parse(JSON.stringify(localItem));
                                         }
                                         return csvItem;
@@ -2089,6 +2120,10 @@
                                             }
 
                                             if (localItem && localItem._localTime && (now - localItem._localTime < 300000)) {
+                                                // Jika di CSV foto sudah jadi link GDrive, abaikan foto base64 lokal.
+                                                var csvHasDriveLinks = csvItem.fotos && csvItem.fotos.length > 0 && csvItem.fotos[0].indexOf('http') === 0;
+                                                if (csvHasDriveLinks) return csvItem;
+                                                
                                                 return JSON.parse(JSON.stringify(localItem));
                                             }
                                             return csvItem;
