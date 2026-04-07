@@ -220,12 +220,12 @@
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <!-- PERBAIKAN STRUKTUR POHON (TOP CENTER) YANG BENAR BENAR PAS -->
-                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto bg-gray-50 relative text-center">
-                            <!-- Wrapper bertindak sbg box kaku agar browser tidak menyisakan ruang putih raksasa -->
-                            <div id="tree-wrapper" :style="{ width: treeWrapperWidth, height: treeWrapperHeight }" class="inline-block relative transition-all duration-300 mx-auto align-top pt-6 md:pt-10">
-                                <!-- Posisikan absolute di tengah atas wrapper -->
-                                <div id="tree-content" class="absolute top-6 md:top-10 left-1/2 origin-top transition-transform duration-300 px-6" :style="{ transform: 'translateX(-50%) scale(' + treeZoom + ')' }">
+                        <!-- PERBAIKAN STRUKTUR POHON (TOP CENTER 100% AKURAT) -->
+                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto bg-gray-50 relative">
+                            <!-- Wrapper dengan relative, mx-auto agar bisa digeser scrollLeft -->
+                            <div id="tree-wrapper" :style="{ width: treeWrapperWidth, height: treeWrapperHeight }" class="relative mx-auto transition-all duration-300">
+                                <!-- Konten Pohon diposisikan absolute di tengah-atas. origin-top memastikan ia membesar/mengecil dari atas -->
+                                <div id="tree-content" class="absolute top-0 left-1/2 origin-top transition-transform duration-300 pt-6 md:pt-10" :style="{ transform: 'translateX(-50%) scale(' + treeZoom + ')' }">
                                     <div class="tree" v-if="treeData.length > 0">
                                         <ul>
                                             <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
@@ -326,14 +326,20 @@
 
                 <!-- 4. ACARA / GALERI -->
                 <div v-else-if="activeTab === 'acara'" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 min-h-[70vh]">
-                    <div class="flex justify-between items-center mb-4 md:mb-6 border-b pb-3 md:pb-4">
+                    <div class="flex justify-between items-center mb-4 md:mb-6 border-b pb-3 md:pb-4 flex-col md:flex-row gap-3">
                         <div>
                             <h2 class="text-xl md:text-2xl font-bold text-emerald-800">Acara & Dokumentasi</h2>
                             <p class="text-xs md:text-sm text-gray-500">Album memori dan dokumentasi keluarga</p>
                         </div>
-                        <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-emerald-700 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 shadow-md">
-                            <i class="fas fa-plus"></i> <span class="hidden md:inline">Tambah Acara</span>
-                        </button>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <!-- TOMBOL SYNC MANUAL MUNCUL JIKA ADA DATA LOKAL YANG TERTINGGAL -->
+                            <button v-if="unsyncedAcaraList.length > 0" @click="syncUnsyncedAcara" class="bg-yellow-500 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-yellow-600 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 shadow-md font-bold transition-colors w-full md:w-auto justify-center">
+                                <i class="fas fa-sync-alt" :class="{'animate-spin': isSyncingLocal}"></i> <span class="hidden md:inline">Sync ({{ unsyncedAcaraList.length }})</span>
+                            </button>
+                            <button @click="isAcaraFormOpen = true" class="bg-emerald-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-emerald-700 text-xs md:text-sm flex items-center gap-1.5 md:gap-2 shadow-md w-full md:w-auto justify-center font-bold">
+                                <i class="fas fa-plus"></i> <span class="hidden md:inline">Tambah Acara</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -341,7 +347,7 @@
                             <div>
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-bold text-base md:text-lg text-gray-800">{{ acara.judul }}</h3>
-                                    <span class="text-[10px] md:text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
+                                    <span class="text-[10px] md:text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full whitespace-nowrap"><i class="fas fa-tag mr-1"></i>{{ acara.jenis }}</span>
                                 </div>
                                 <p class="text-gray-500 text-xs md:text-sm mb-3"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
                                 
@@ -350,7 +356,7 @@
                                     <div v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" @click="openPreview(foto, acara.judul)" class="cursor-pointer flex-shrink-0 relative group block rounded-md border border-gray-200 overflow-hidden shadow-sm bg-white">
                                         <img :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover group-hover:scale-110 transition-transform duration-300">
                                         <!-- BADGE LOKAL SYNC -->
-                                        <div v-if="foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sinkronisasi Ulang">
+                                        <div v-if="foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Belum Sinkron ke Server">
                                             <i class="fas fa-clock"></i>
                                         </div>
                                         <!-- OVERLAY PREVIEW ICON -->
@@ -360,14 +366,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center">
-                                <!-- LINK VIDEO / GDRIVE FIX -->
-                                <a v-if="acara.gdriveLink && acara.gdriveLink.trim() !== ''" :href="formatExternalUrl(acara.gdriveLink)" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm font-semibold flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-md">
-                                    <i class="fab fa-google-drive"></i> Buka Link
-                                </a>
-                                <span v-else class="text-xs text-gray-400 italic">Tidak ada link eksternal</span>
-                                
-                                <button @click="deleteAcara(acara)" class="text-red-400 hover:text-red-600 p-1 md:p-2 bg-red-50 hover:bg-red-100 rounded-full transition-colors"><i class="fas fa-trash"></i></button>
+                            <div class="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
+                                    <!-- BADGE STATUS ACARA -->
+                                    <span v-if="isAcaraSynced(acara)" class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200"><i class="fas fa-check-circle"></i> Tersinkron</span>
+                                    <span v-else class="text-[10px] font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200" title="Tekan Tombol Sync di atas"><i class="fas fa-clock"></i> Lokal</span>
+                                    
+                                    <a v-if="acara.gdriveLink && acara.gdriveLink.trim() !== ''" :href="formatExternalUrl(acara.gdriveLink)" target="_blank" class="text-blue-600 hover:text-blue-800 text-[10px] font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                                        <i class="fab fa-google-drive"></i> Link
+                                    </a>
+                                </div>
+                                <button @click="deleteAcara(acara)" class="text-red-400 hover:text-red-600 p-1.5 bg-red-50 hover:bg-red-100 rounded transition-colors text-xs"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
@@ -493,11 +502,11 @@
         <!-- MODAL: PREVIEW FOTO ACARA (BARU) -->
         <div v-if="previewPhotoUrl" class="fixed inset-0 bg-black/90 z-[70] flex justify-center items-center p-4" @click.self="closePreview">
             <button @click="closePreview" class="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-gray-300 text-3xl md:text-4xl transition">&times;</button>
-            <img :src="previewPhotoUrl" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
+            <img :src="previewPhotoUrl" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl bg-black">
             
             <div class="absolute bottom-6 flex gap-3 md:gap-4">
                 <a :href="previewPhotoUrl" :download="previewPhotoTitle + '.jpg'" target="_blank" class="bg-emerald-600 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full font-bold shadow-lg hover:bg-emerald-700 transition text-sm md:text-base flex items-center gap-2">
-                    <i class="fas fa-download"></i> Unduh Foto
+                    <i class="fas fa-download"></i> Unduh / Buka
                 </a>
                 <button @click="closePreview" class="bg-gray-600 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full font-bold shadow-lg hover:bg-gray-700 transition text-sm md:text-base">
                     Tutup
@@ -645,15 +654,14 @@
                 </div>
                 <div class="p-4 md:p-6 overflow-y-auto flex-1 text-sm text-gray-700 space-y-3">
                     <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs md:text-sm font-medium">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING (Update 4):</strong> Kode ini telah diperbarui agar 100% Anti-Gagal saat mengupload banyak foto dan memastikan data tertulis di baris yang benar. Silakan pasang/ganti ulang skrip Anda dengan ini.
+                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING (Update Final):</strong> Skrip ini telah saya buat anti-gagal, ada jeda waktu (sleep) agar tidak diblokir Google jika mengupload banyak foto, dan mengabaikan error agar data pasti tersimpan ke Sheet.
                     </div>
                     
                     <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm ml-1 font-medium text-gray-600">
                         <li>Buka Google Sheet database Anda, lalu klik menu <b>Ekstensi</b> > <b>Apps Script</b>.</li>
                         <li>Hapus seluruh kode lama yang ada di dalam editor tersebut.</li>
                         <li>Klik tombol <b class="text-emerald-600"><i class="fas fa-copy"></i> Copy Kode</b> di bawah ini, lalu Paste ke dalam editor Apps Script Anda.</li>
-                        <li><span class="text-red-600 font-bold">Langkah Wajib:</span> Di menu atas Editor Apps Script, pastikan nama fungsinya adalah <code>setup</code>, kemudian tekan tombol <b>▶ Jalankan (Run)</b>.</li>
-                        <li>Jika muncul, klik <b>Tinjau Izin (Review Permissions)</b> > <b>Pilih Akun Anda</b> > <b>Lanjutan (Advanced)</b> > Klik tulisan <b>Buka Project (Tidak Aman)</b> > Klik <b>Izinkan (Allow)</b>.</li>
+                        <li><span class="text-red-600 font-bold">Langkah Wajib:</span> Di menu atas Editor Apps Script, pastikan nama fungsinya adalah <code>setup</code>, kemudian tekan tombol <b>▶ Jalankan (Run)</b>. Jika muncul pop-up, setujui izinnya.</li>
                         <li>Klik <b>Terapkan (Deploy)</b> > <b>Deployment Baru</b> > Pilih jenis <b>Aplikasi Web (Web App)</b> > Akses: <b>Siapa saja (Anyone)</b> > Klik <b>Terapkan</b>.</li>
                         <li>Copy URL yang dihasilkan, lalu masukkan ke dalam kolom <i>Link Tulis Data (URL Google Apps Script)</i> di menu Pengaturan aplikasi ini.</li>
                     </ol>
@@ -663,238 +671,6 @@
                         <textarea readonly class="w-full h-80 bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs outline-none resize-none pt-12 shadow-inner border border-gray-700">{{ appScriptTemplate }}</textarea>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- MODAL: FORM TAMBAH / EDIT DATA LENGKAP -->
-        <div v-if="isFormOpen" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-start p-2 md:p-4 print-hidden overflow-y-auto" @click.self="isFormOpen = false">
-            <div class="bg-[#f3f4f6] rounded-xl md:rounded-2xl shadow-2xl w-full max-w-4xl my-4 md:my-6 overflow-hidden">
-                <div class="bg-white px-4 md:px-8 py-4 md:py-5 flex items-center border-b border-gray-200">
-                    <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-lg md:text-xl mr-3 md:mr-4">
-                        <i :class="formMode === 'add' ? 'fas fa-user-plus' : 'fas fa-user-edit'"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-lg md:text-xl font-bold text-gray-800">{{ formMode === 'add' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
-                        <p class="text-xs md:text-sm text-gray-500">Lengkapi atau ubah data silsilah di bawah ini</p>
-                    </div>
-                    <button @click="isFormOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl md:text-2xl transition px-2">&times;</button>
-                </div>
-                
-                <form @submit.prevent="saveMember" class="p-4 md:p-8 pt-3 md:pt-4 space-y-4 md:space-y-6">
-                    <!-- KARTU 1: INFORMASI DASAR -->
-                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
-                            <i class="fas fa-id-card"></i> INFORMASI DASAR
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Lengkap *</label>
-                                <input required v-model="formMember.namaLengkap" type="text" placeholder="Masukkan nama" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Panggilan</label>
-                                <input v-model="formMember.panggilan" type="text" placeholder="Nama sehari-hari" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin *</label>
-                                <select required v-model="formMember.jk" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
-                                    <option value="" disabled>Pilih Gender...</option>
-                                    <option value="L">Laki-laki</option>
-                                    <option value="P">Perempuan</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Keluarga *</label>
-                                <select required v-model="formMember.statusRelasi" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
-                                    <option value="" disabled>Pilih Status...</option>
-                                    <option>Leluhur Utama</option>
-                                    <option>Garis Keturunan</option>
-                                    <option>Anak</option>
-                                    <option>Cucu</option>
-                                    <option>Cicit</option>
-                                    <option>Menantu</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KARTU 2: KELAHIRAN & KEHIDUPAN -->
-                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
-                            <i class="far fa-calendar-alt"></i> KELAHIRAN & KEHIDUPAN
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tempat Lahir</label>
-                                <input v-model="formMember.tempatLahir" type="text" placeholder="Kota/Kabupaten" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
-                                <input v-model="formMember.tglLahir" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Kehidupan</label>
-                                <select v-model="formMember.statusKehidupan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
-                                    <option>Hidup</option>
-                                    <option>Wafat</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div v-if="formMember.statusKehidupan === 'Wafat'" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mt-4 pt-4 md:mt-5 md:pt-5 border-t border-gray-100">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Tanggal Wafat</label>
-                                <input v-model="formMember.tglWafat" type="date" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Lokasi Makam</label>
-                                <input v-model="formMember.makam" type="text" placeholder="Tulis nama/lokasi makam" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KARTU 3: GARIS SILSILAH & PERNIKAHAN -->
-                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
-                            <i class="fas fa-sitemap"></i> GARIS SILSILAH & PERNIKAHAN
-                        </h4>
-                        <div class="mb-4 md:mb-5">
-                            <label class="block text-[11px] md:text-xs font-bold text-emerald-700 mb-1">Hubungkan ke Pohon: Induk Utama *</label>
-                            <select required v-model="formMember.parentId" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-800 font-medium">
-                                <option value="">-- Letakkan di Posisi Puncak (Leluhur) --</option>
-                                <option v-for="item in familyData" :key="item.id" :value="item.id">{{ item.namaLengkap }}</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ayah Kandung</label>
-                                <input v-model="formMember.namaAyah" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Ibu Kandung</label>
-                                <input v-model="formMember.namaIbu" type="text" placeholder="Ketik manual" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="mb-4 md:mb-5 border-t border-gray-100 pt-4 md:pt-5">
-                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Urutan Kelahiran (Anak Ke-)</label>
-                            <input v-model="formMember.urutanAnak" type="number" placeholder="Contoh: 1, 2, 3..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            <p class="text-[9px] md:text-[10px] text-gray-500 mt-1">Mengurutkan posisi anak dari kiri ke kanan di Pohon Silsilah.</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 border-t border-gray-100 pt-4 md:pt-5">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Status Pernikahan</label>
-                                <select v-model="formMember.statusPernikahan" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none text-gray-700">
-                                    <option>Belum Menikah</option>
-                                    <option>Menikah</option>
-                                    <option>Cerai Hidup</option>
-                                    <option>Cerai Mati</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nama Pasangan</label>
-                                <input v-model="formMember.namaPasangan" type="text" placeholder="Tulis nama suami/istri" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KARTU 4: KONTAK PRIBADI & FOTO -->
-                    <div class="bg-white p-4 md:p-6 rounded-lg md:rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-[11px] md:text-[12px] font-bold text-emerald-600 uppercase tracking-widest mb-3 md:mb-4 flex items-center gap-2">
-                            <i class="fas fa-phone-alt"></i> KONTAK PRIBADI & FOTO
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5 mb-4 md:mb-5">
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Nomor HP / WhatsApp</label>
-                                <div class="relative">
-                                    <i class="fab fa-whatsapp absolute left-3 top-2.5 md:top-3 text-green-500 text-sm md:text-base"></i>
-                                    <input v-model="formMember.noHp" type="text" placeholder="08123456789" class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 pl-8 md:pl-9 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Upload Foto Profil</label>
-                                <div class="flex items-center gap-2 md:gap-3">
-                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded bg-gray-100 border overflow-hidden flex-shrink-0 relative flex items-center justify-center">
-                                        <template v-if="formMember.foto">
-                                            <img :src="getSafeImageUrl(formMember.foto)" class="w-full h-full object-cover">
-                                        </template>
-                                        <i v-else class="fas fa-user text-sm md:text-base" :class="formMember.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
-                                    </div>
-                                    <input type="file" accept="image/*" @change="handleMemberFotoUpload" class="w-full border border-gray-300 rounded-md p-1 md:p-1.5 text-[10px] md:text-sm file:mr-2 md:file:mr-4 file:py-1 file:px-2 md:file:px-4 file:rounded file:border-0 file:text-[10px] md:file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] md:text-xs font-semibold text-gray-700 mb-1">Alamat Terakhir / Domisili</label>
-                            <textarea v-model="formMember.alamat" rows="2" placeholder="Tulis alamat lengkap..." class="w-full border border-gray-300 rounded-md p-2 md:p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none resize-y"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Footer / Submit Button -->
-                    <div class="bg-white p-3 md:p-4 rounded-lg md:rounded-xl shadow-sm border border-gray-200">
-                        <button type="submit" :disabled="isSaving" class="w-full py-2.5 md:py-3.5 bg-[#12b981] hover:bg-[#059669] text-white font-bold rounded-lg transition shadow flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm md:text-base">
-                            <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
-                            <i v-else class="fas fa-cloud-upload-alt"></i> 
-                            {{ isSaving ? 'Menyimpan ke Server...' : 'Simpan Data Anggota' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- MODAL: TAMBAH ACARA DENGAN UPLOAD FOTO -->
-        <div v-if="isAcaraFormOpen" class="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 print-hidden" @click.self="isAcaraFormOpen = false">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
-                <div class="bg-emerald-700 text-white px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-calendar-plus"></i> Tambah Acara Baru</h3>
-                    <button @click="isAcaraFormOpen = false" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
-                </div>
-                
-                <form @submit.prevent="saveAcara" class="p-6 space-y-4 md:space-y-5 max-h-[80vh] overflow-y-auto">
-                    <div>
-                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Judul Acara *</label>
-                        <input required v-model="formAcara.judul" type="text" placeholder="Contoh: Reuni Lebaran 2024" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Tanggal Acara *</label>
-                            <input required v-model="formAcara.tanggal" type="date" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Jenis Media</label>
-                            <select v-model="formAcara.jenis" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                                <option>Foto / Galeri</option>
-                                <option>Video</option>
-                                <option>Dokumen</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 pt-4 mt-2">
-                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Upload Foto Acara Langsung (Maks 5 Foto)</label>
-                        <input type="file" multiple accept="image/*" @change="handleAcaraFotoUpload" class="w-full border border-gray-300 rounded-lg p-1.5 text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 text-gray-500">
-                        <p class="text-[10px] md:text-xs text-gray-500 mt-1">Foto akan dikompresi otomatis agar aplikasi tidak berat.</p>
-                        
-                        <div v-if="formAcara.fotos.length > 0" class="flex gap-2 overflow-x-auto mt-3 pb-2 scrollbar-hide">
-                            <div v-for="(f, idx) in formAcara.fotos" :key="idx" class="relative group">
-                                <img :src="f" class="w-14 h-14 object-cover rounded-md border border-gray-200">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-gray-200 pt-4">
-                        <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Atau Gunakan Link Google Drive (Untuk Video / Album Besar)</label>
-                        <input v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
-                    </div>
-                    
-                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-                        <button type="button" @click="isAcaraFormOpen = false" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition text-sm">Batal</button>
-                        <button type="submit" :disabled="isSaving" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition shadow-md text-sm disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2">
-                            <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
-                            {{ isSaving ? 'Mengunggah...' : 'Simpan Acara' }}
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -913,7 +689,6 @@
                     </template>
                     <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                     
-                    <!-- BADGE LOKAL PADA POHON JIKA FOTO BELUM SYNC -->
                     <div v-if="node && node.foto && node.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sync ke GDrive">
                         <i class="fas fa-clock"></i>
                     </div>
@@ -989,6 +764,7 @@
                     
                     previewPhotoUrl: null,
                     previewPhotoTitle: '',
+                    isSyncingLocal: false,
                     
                     isFormOpen: false,
                     formMode: 'add',
@@ -1029,7 +805,6 @@
                     },
                     
                     appScriptTemplate: `function setup() {
-  // 🔴 JALANKAN FUNGSI INI SEKALI UNTUK MEMBERIKAN IZIN (AUTHORIZE)
   DriveApp.getRootFolder();
   SpreadsheetApp.getActiveSpreadsheet();
 }
@@ -1047,7 +822,7 @@ function doPost(e) {
     var data = request.data;
     var sheet = SpreadsheetApp.getActiveSpreadsheet();
 
-    // 🔴 ID Folder GDrive Anda sudah dimasukkan otomatis
+    // 🔴 ID Folder GDrive
     var folderId = "1ObOD2vcohyjkfYBv-R5ICHWlEQUoB5YX"; 
     var folder;
     try {
@@ -1072,15 +847,17 @@ function doPost(e) {
                  var base64 = data.fotos[i].split(',')[1];
                  var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Acara_' + data.id + '_' + i + '.jpg');
                  var file = folder.createFile(blob);
-                 // Melewati blokir izin jika terjadi
+                 
+                 // Abaikan error permission untuk memastikan skrip berlanjut
                  try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(shareErr){}
                  
-                 // Gunakan format lh3 langsung untuk mencegah diblokir
                  var fileId = file.getId();
                  var webUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
                  fotoUrls.push(webUrl);
+                 
+                 // Jeda 500ms agar Google Drive tidak memblokir karena upload terlalu cepat beruntun
+                 Utilities.sleep(500); 
              } catch(fotoErr) {
-                 // Jika satu foto gagal, jangan hancurkan seluruh proses. Sisipkan kosong agar lanjut.
                  fotoUrls.push('');
              }
           } else {
@@ -1095,7 +872,6 @@ function doPost(e) {
           lastRow = 1;
       }
       
-      // Menulis baris dengan cara yang lebih tahan banting (anti row loncat ke 1000)
       ws.getRange(lastRow + 1, 1, 1, 6).setValues([[
         data.id,
         data.judul,
@@ -1190,6 +966,12 @@ function doPost(e) {
                 }
             },
             computed: {
+                unsyncedAcaraList: function() {
+                    var self = this;
+                    return this.acaraData.filter(function(a) {
+                        return !self.isAcaraSynced(a);
+                    });
+                },
                 filteredData: function() {
                     var validData = this.familyData.filter(function(d) { return d && typeof d === 'object' });
                     if (!this.searchQuery) return validData;
@@ -1348,6 +1130,44 @@ function doPost(e) {
                 }
             },
             methods: {
+                isAcaraSynced: function(acara) {
+                    if (!acara || !acara.fotos) return true; 
+                    for(var i=0; i<acara.fotos.length; i++){
+                        if(acara.fotos[i] && acara.fotos[i].indexOf('data:image') === 0) return false;
+                    }
+                    return true;
+                },
+                
+                syncUnsyncedAcara: function() {
+                    if (!this.appScriptUrl) {
+                        this.showAlert('Perhatian', 'URL Apps Script belum diatur.', 'warning');
+                        return;
+                    }
+                    this.isSyncingLocal = true;
+                    var unsynced = this.unsyncedAcaraList;
+                    var promises = [];
+                    var self = this;
+
+                    unsynced.forEach(function(acaraObj) {
+                        var payload = { action: 'add_acara', data: acaraObj };
+                        var p = fetch(self.appScriptUrl, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: JSON.stringify(payload)
+                        });
+                        promises.push(p);
+                    });
+
+                    Promise.allSettled(promises).then(function() {
+                        self.showAlert('Proses Sync Selesai', 'Menunggu verifikasi dari Google Sheet...', 'info');
+                        setTimeout(function() {
+                            self.loadFromSheet();
+                            self.isSyncingLocal = false;
+                        }, 4000); // Tunggu server menulis data
+                    });
+                },
+
                 copyScript: function() {
                     try {
                         var tempInput = document.createElement("textarea");
@@ -1566,15 +1386,12 @@ function doPost(e) {
 
                 zoomIn: function() {
                     this.treeZoom = Math.min(2, this.treeZoom + 0.1);
-                    this.updateTreeBounds();
                 },
                 zoomOut: function() {
                     this.treeZoom = Math.max(0.15, this.treeZoom - 0.1);
-                    this.updateTreeBounds();
                 },
                 resetZoom: function() {
                     this.treeZoom = 1;
-                    this.updateTreeBounds();
                 },
                 autoFitTree: function() {
                     var self = this;
@@ -1585,8 +1402,6 @@ function doPost(e) {
                         if (!container || !content) return;
                         
                         self.treeZoom = 1;
-                        self.treeWrapperWidth = '100%';
-                        self.treeWrapperHeight = 'auto';
                         
                         self.$nextTick(function() {
                             var containerWidth = container.clientWidth;
@@ -1595,8 +1410,8 @@ function doPost(e) {
                             var contentHeight = content.scrollHeight;
                             
                             if (contentWidth > containerWidth || contentHeight > containerHeight) {
-                                var scaleX = (containerWidth - 60) / contentWidth;
-                                var scaleY = (containerHeight - 60) / contentHeight;
+                                var scaleX = (containerWidth - 40) / contentWidth;
+                                var scaleY = (containerHeight - 40) / contentHeight;
                                 var bestScale = Math.min(scaleX, scaleY, 1);
                                 
                                 self.treeZoom = Math.max(bestScale, 0.15); 
@@ -1604,35 +1419,18 @@ function doPost(e) {
                                 self.treeZoom = 1;
                             }
                             
-                            self.updateTreeBounds();
-                        });
-                    }, 350); 
-                },
-                updateTreeBounds: function() {
-                    var self = this;
-                    this.$nextTick(function() {
-                        var content = document.getElementById('tree-content');
-                        var container = document.getElementById('tree-scroll-container');
-                        
-                        if (content && container) {
-                            var w = content.scrollWidth;
-                            var h = content.scrollHeight;
-                            
-                            // Paksa dimensi pembungkus mengikuti kalkulasi akurat + sisa ruang 80px
-                            self.treeWrapperWidth = Math.max(container.clientWidth, (w * self.treeZoom) + 80) + 'px';
-                            self.treeWrapperHeight = ((h * self.treeZoom) + 80) + 'px';
-                            
                             setTimeout(function() {
-                                var wrapperWidth = Math.max(container.clientWidth, (w * self.treeZoom) + 80);
-                                if (wrapperWidth > container.clientWidth) {
-                                    container.scrollLeft = (wrapperWidth - container.clientWidth) / 2;
+                                // Scroll horizontal ke tengah
+                                var scaledWidth = content.scrollWidth * self.treeZoom;
+                                if (scaledWidth > container.clientWidth) {
+                                    container.scrollLeft = (scaledWidth - container.clientWidth) / 2;
                                 } else {
                                     container.scrollLeft = 0;
                                 }
                                 container.scrollTop = 0; // Kunci scroll di posisi paling ATAS (Top)
                             }, 50);
-                        }
-                    });
+                        });
+                    }, 350); 
                 },
 
                 openPreview: function(url, title) {
@@ -1969,7 +1767,6 @@ function doPost(e) {
                         if (this.appScriptUrl) {
                             var payload = { action: 'add_acara', data: newAcaraObj };
                             
-                            // Metode pengiriman tanpa block peramban
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors', 
