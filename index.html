@@ -45,8 +45,8 @@
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #059669; }
 
-        /* POHON SILSILAH */
-        .tree { display: inline-flex; justify-content: center; min-width: 100%; }
+        /* POHON SILSILAH - DIPERBAIKI AGAR CENTER & AUTO */
+        .tree { display: inline-block; margin: 0 auto; text-align: center; }
         .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
         .tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.3s; }
         .tree li::before, .tree li::after{ content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #34d399; width: 50%; height: 20px; }
@@ -87,8 +87,9 @@
                     <button @click="activeTab = 'home'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'home', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'home'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-home"></i> <span class="hidden sm:inline">Beranda</span>
                     </button>
+                    <!-- UBAH MENU POHON MENJADI SILSILAH -->
                     <button @click="activeTab = 'tree'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'tree', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'tree'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
-                        <i class="fas fa-sitemap"></i> <span class="hidden sm:inline">Pohon</span>
+                        <i class="fas fa-sitemap"></i> <span class="hidden sm:inline">Silsilah</span>
                     </button>
                     <button @click="activeTab = 'data'" :class="{'bg-white text-emerald-800 shadow-sm': activeTab === 'data', 'text-emerald-50 hover:bg-emerald-700/50': activeTab !== 'data'}" class="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-3 md:py-2 rounded-md transition-all duration-200 text-xs md:text-sm font-medium">
                         <i class="fas fa-users"></i> <span class="hidden sm:inline">Data</span>
@@ -218,8 +219,9 @@
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <div class="flex-1 w-full h-full overflow-auto relative">
-                            <div id="tree-content" class="min-w-max min-h-max p-10 flex justify-center origin-top transition-transform duration-200" :style="{ transform: 'scale(' + treeZoom + ')' }">
+                        <!-- PERBAIKAN STRUKTUR CSS AGAR TREE CENTER DAN TIDAK TERPOTONG KIRI -->
+                        <div class="flex-1 w-full h-full overflow-auto relative text-center whitespace-nowrap">
+                            <div id="tree-content" class="inline-block min-w-full p-6 md:p-10 origin-top transition-transform duration-200" :style="{ transform: 'scale(' + treeZoom + ')' }">
                                 <div class="tree" v-if="treeData.length > 0">
                                     <ul>
                                         <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
@@ -335,17 +337,24 @@
                                 </div>
                                 <p class="text-gray-500 text-xs md:text-sm mb-3"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
                                 
+                                <!-- FOTO ACARA BISA DI KLIK UNTUK MEMBUKA URL NYA (BARU) -->
                                 <div v-if="acara.fotos && acara.fotos.length > 0" class="flex gap-2 overflow-x-auto py-2 mb-2 scrollbar-hide">
-                                    <img v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover rounded-md border border-gray-200 shadow-sm flex-shrink-0">
+                                    <a v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :href="getSafeImageUrl(foto)" target="_blank" class="flex-shrink-0 relative group block rounded-md border border-gray-200 overflow-hidden shadow-sm">
+                                        <img :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover group-hover:scale-110 transition-transform duration-300">
+                                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
+                                            <i class="fas fa-external-link-alt text-white opacity-0 group-hover:opacity-100 text-[10px]"></i>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
                             <div class="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center">
-                                <a v-if="acara.gdriveLink" :href="acara.gdriveLink" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm font-semibold flex items-center gap-1">
-                                    <i class="fab fa-google-drive"></i> Buka GDrive / Video
+                                <!-- LINK VIDEO / GDRIVE FIX (BARU) -->
+                                <a v-if="acara.gdriveLink && acara.gdriveLink.trim() !== ''" :href="formatExternalUrl(acara.gdriveLink)" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm font-semibold flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-md">
+                                    <i class="fab fa-google-drive"></i> Buka Link
                                 </a>
-                                <span v-else class="text-xs text-gray-400 italic">Hanya Galeri Foto</span>
+                                <span v-else class="text-xs text-gray-400 italic">Tidak ada link eksternal</span>
                                 
-                                <button @click="deleteAcara(acara)" class="text-red-400 hover:text-red-600 p-1 md:p-2 bg-red-50 rounded-full"><i class="fas fa-trash"></i></button>
+                                <button @click="deleteAcara(acara)" class="text-red-400 hover:text-red-600 p-1 md:p-2 bg-red-50 hover:bg-red-100 rounded-full transition-colors"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                         <div v-if="acaraData.length === 0" class="col-span-full text-center py-10 text-gray-400">
@@ -805,7 +814,7 @@
 
                     <div class="border-t border-gray-200 pt-4">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Atau Gunakan Link Google Drive (Untuk Video / Album Besar)</label>
-                        <input v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        <input v-model="formAcara.gdriveLink" type="text" placeholder="Pastikan berisi link utuh misalnya https://youtube.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                     </div>
                     
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
@@ -1302,6 +1311,16 @@
                     this.treeZoom = 1;
                 },
 
+                // METHOD BARU UTK FORMAT LINK VIDEO/DRIVE
+                formatExternalUrl: function(url) {
+                    if (!url) return '#';
+                    var trimmed = url.trim();
+                    if (trimmed.toLowerCase().indexOf('http://') === 0 || trimmed.toLowerCase().indexOf('https://') === 0) {
+                        return trimmed;
+                    }
+                    return 'https://' + trimmed;
+                },
+
                 getSafeImageUrl: function(url) {
                     if (!url || typeof url !== 'string') return '';
                     if (url.indexOf('data:') === 0) return url; 
@@ -1640,7 +1659,7 @@
                 finishSaveAcara: function() {
                     this.isAcaraFormOpen = false;
                     this.formAcara = { judul: '', tanggal: '', jenis: 'Foto / Galeri', gdriveLink: '', fotos: [] };
-                    this.showAlert('Berhasil', 'Acara dan foto berhasil diunggah ke Server!', 'success');
+                    this.showAlert('Berhasil', 'Acara dan foto berhasil disimpan!', 'success');
                     this.isSaving = false;
                 },
 
