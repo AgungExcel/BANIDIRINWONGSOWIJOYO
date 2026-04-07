@@ -45,8 +45,8 @@
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #059669; }
 
-        /* POHON SILSILAH - DIPERBAIKI AGAR CENTER & AUTO */
-        .tree { display: inline-block; margin: 0 auto; text-align: center; }
+        /* POHON SILSILAH */
+        .tree { display: inline-flex; justify-content: center; min-width: 100%; }
         .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
         .tree li { float: left; text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.3s; }
         .tree li::before, .tree li::after{ content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #34d399; width: 50%; height: 20px; }
@@ -220,15 +220,19 @@
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
-                        <!-- PERBAIKAN STRUKTUR CSS AGAR TREE CENTER DAN TIDAK TERPOTONG KIRI -->
-                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto relative text-center whitespace-nowrap">
-                            <div id="tree-content" class="inline-block min-w-max p-6 md:p-10 transition-transform duration-300" :style="{ transform: 'scale(' + treeZoom + ')', transformOrigin: 'top center' }">
-                                <div class="tree" v-if="treeData.length > 0">
-                                    <ul>
-                                        <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
-                                    </ul>
+                        <!-- PERBAIKAN STRUKTUR POHON AGAR SELALU DI ATAS & TENGAH -->
+                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto bg-gray-50 relative text-center">
+                            <!-- Pembungkus (wrapper) ini ukurannya akan mengikuti ukuran yang di-scale, menghilangkan ruang putih -->
+                            <div id="tree-wrapper" :style="{ width: treeWrapperWidth, height: treeWrapperHeight }" class="inline-block relative transition-all duration-300 mt-6 mx-auto text-left min-w-full">
+                                <!-- origin-top membuat zoom mengecil memusat ke atas, left-1/2 dan translateX(-50%) memusat ke tengah -->
+                                <div id="tree-content" class="absolute top-0 left-1/2 origin-top inline-block px-6 transition-transform duration-300" :style="{ transform: 'translateX(-50%) scale(' + treeZoom + ')' }">
+                                    <div class="tree" v-if="treeData.length > 0">
+                                        <ul>
+                                            <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
+                                        </ul>
+                                    </div>
+                                    <p v-if="treeData.length === 0" class="text-gray-400 italic text-center mt-10 w-[300px]">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                                 </div>
-                                <p v-if="treeData.length === 0" class="text-gray-400 italic text-center mt-10">Belum ada data keluarga. Coba muat ulang atau pastikan Spreadsheet tidak kosong.</p>
                             </div>
                         </div>
                     </div>
@@ -285,7 +289,7 @@
                                                 <i class="fas fa-user text-xs" :class="item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'" style="display:none;"></i>
                                             </template>
                                             <i v-else class="fas fa-user text-xs" :class="item && item.jk === 'P' ? 'text-pink-400' : 'text-blue-400'"></i>
-                                            <div v-if="item && item.foto && item.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Masih di penyimpanan lokal (Menunggu Sync ke GDrive)">
+                                            <div v-if="item && item.foto && item.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sinkronisasi Ulang">
                                                 <i class="fas fa-clock"></i>
                                             </div>
                                         </div>
@@ -346,7 +350,7 @@
                                     <a v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :href="getSafeImageUrl(foto)" target="_blank" class="flex-shrink-0 relative group block rounded-md border border-gray-200 overflow-hidden shadow-sm">
                                         <img :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover group-hover:scale-110 transition-transform duration-300">
                                         <!-- BADGE LOKAL SYNC -->
-                                        <div v-if="foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Masih di penyimpanan lokal (Menunggu Sync ke GDrive)">
+                                        <div v-if="foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sinkronisasi Ulang">
                                             <i class="fas fa-clock"></i>
                                         </div>
                                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
@@ -625,15 +629,16 @@
                 </div>
                 <div class="p-4 md:p-6 overflow-y-auto flex-1 text-sm text-gray-700 space-y-3">
                     <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs md:text-sm font-medium">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Jika terdapat logo <i class="fas fa-clock text-yellow-500"></i> pada foto Anda, berarti foto tersebut belum tersinkronisasi ke Google Drive. Pastikan Anda melakukan langkah di bawah ini:
+                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Karena sistem sebelumnya tertahan kebijakan peramban, kode di bawah telah diperbarui. Silakan ulangi langkah ini.
                     </div>
                     
                     <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm ml-1 font-medium text-gray-600">
                         <li>Buka Google Sheet database Anda, lalu klik menu <b>Ekstensi</b> > <b>Apps Script</b>.</li>
                         <li>Hapus seluruh kode lama yang ada di dalam editor tersebut.</li>
                         <li>Klik tombol <b class="text-emerald-600"><i class="fas fa-copy"></i> Copy Kode</b> di bawah ini, lalu Paste ke dalam editor Apps Script Anda.</li>
-                        <li><span class="text-red-600 font-bold">Langkah Wajib:</span> Temukan tulisan <code class="bg-gray-200 text-red-600 px-1 rounded">ID_FOLDER_GDRIVE_ANDA</code> di dalam kode, dan ganti dengan ID Folder Google Drive Anda (Pastikan folder tersebut sudah di-share "Siapa saja yang memiliki link").</li>
-                        <li>Klik <b>Terapkan (Deploy)</b> > <b>Deployment Baru</b> > Pilih jenis <b>Aplikasi Web (Web App)</b> > Akses: <b>Siapa saja (Anyone)</b>.</li>
+                        <li><span class="text-red-600 font-bold">Langkah Wajib:</span> Di menu atas Editor Apps Script, pastikan nama fungsinya adalah <code>setup</code>, kemudian tekan tombol <b>▶ Jalankan (Run)</b>.</li>
+                        <li>Jika muncul, klik <b>Tinjau Izin (Review Permissions)</b> > <b>Pilih Akun Anda</b> > <b>Lanjutan (Advanced)</b> > Klik tulisan <b>Buka Project (Tidak Aman)</b> > Klik <b>Izinkan (Allow)</b>.</li>
+                        <li>Klik <b>Terapkan (Deploy)</b> > <b>Deployment Baru</b> > Pilih jenis <b>Aplikasi Web (Web App)</b> > Akses: <b>Siapa saja (Anyone)</b> > Klik <b>Terapkan</b>.</li>
                         <li>Copy URL yang dihasilkan, lalu masukkan ke dalam kolom <i>Link Tulis Data (URL Google Apps Script)</i> di menu Pengaturan aplikasi ini.</li>
                     </ol>
                     
@@ -863,7 +868,7 @@
 
                     <div class="border-t border-gray-200 pt-4">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Atau Gunakan Link Google Drive (Untuk Video / Album Besar)</label>
-                        <input v-model="formAcara.gdriveLink" type="text" placeholder="Pastikan berisi link utuh misalnya https://youtube.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        <input v-model="formAcara.gdriveLink" type="url" placeholder="https://drive.google.com/..." class="w-full border border-gray-300 rounded-lg p-2.5 text-xs md:text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                     </div>
                     
                     <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
@@ -893,7 +898,7 @@
                     <i v-else class="fas fa-user text-xl md:text-2xl" :class="node && node.jk === 'P' ? 'text-pink-300' : 'text-blue-300'"></i>
                     
                     <!-- BADGE LOKAL PADA POHON JIKA FOTO BELUM SYNC -->
-                    <div v-if="node && node.foto && node.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sync ke GDrive">
+                    <div v-if="node && node.foto && node.foto.startsWith('data:image')" class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] px-1 py-0.5 rounded-bl-md shadow" title="Menunggu Sinkronisasi Ulang">
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
@@ -971,6 +976,8 @@
                     isSaving: false,
                     
                     treeZoom: 1,
+                    treeWrapperWidth: 'auto',
+                    treeWrapperHeight: 'auto',
 
                     todayJavanese: {
                         day: '', pasaran: '', monthNum: 1, monthName: '', fullString: '', suro1: ''
@@ -1002,18 +1009,26 @@
                         statusRelasi: '', parentId: ''
                     },
                     
-                    appScriptTemplate: `function doPost(e) {
+                    appScriptTemplate: `function setup() {
+  // 🔴 JALANKAN FUNGSI INI SEKALI UNTUK MEMBERIKAN IZIN (AUTHORIZE)
+  DriveApp.getRootFolder();
+  SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function doPost(e) {
   try {
+    // Diperbarui agar bisa menerima POST text/plain demi mem-bypass masalah keamanan peramban
     var request = JSON.parse(e.postData.contents);
+    
     var action = request.action;
     var data = request.data;
     var sheet = SpreadsheetApp.getActiveSpreadsheet();
 
-    // 🔴 GANTI DENGAN ID FOLDER GOOGLE DRIVE ANDA (Folder harus Public)
-    var folderId = "ID_FOLDER_GDRIVE_ANDA"; 
+    // 🔴 ID Folder GDrive Anda sudah dimasukkan otomatis
+    var folderId = "1ObOD2vcohyjkfYBv-R5ICHWlEQUoB5YX"; 
     var folder;
     try {
-      folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
+      folder = DriveApp.getFolderById(folderId);
     } catch(err) {
       folder = DriveApp.getRootFolder();
     }
@@ -1502,68 +1517,70 @@
 
                 zoomIn: function() {
                     this.treeZoom = Math.min(2, this.treeZoom + 0.1);
+                    this.updateTreeBounds();
                 },
                 zoomOut: function() {
                     this.treeZoom = Math.max(0.15, this.treeZoom - 0.1);
+                    this.updateTreeBounds();
                 },
                 resetZoom: function() {
                     this.treeZoom = 1;
-                    this.centerTree();
+                    this.updateTreeBounds();
                 },
                 autoFitTree: function() {
                     var self = this;
-                    // Tunggu 350ms sampai efek transisi Vue (fade) benar-benar selesai merender elemen
+                    // Tunggu 350ms sampai efek transisi Vue (fade) benar-benar selesai
                     setTimeout(function() {
                         var container = document.getElementById('tree-scroll-container');
                         var content = document.getElementById('tree-content');
                         if (!container || !content) return;
                         
-                        // Reset zoom agar ukuran yang terdeteksi adalah ukuran asli (tanpa skew)
                         self.treeZoom = 1;
+                        self.treeWrapperWidth = 'auto';
+                        self.treeWrapperHeight = 'auto';
                         
-                        // Memaksa DOM untuk menata ulang lebar (Reflow) sebelum dihitung
-                        void content.offsetWidth;
-                        
-                        setTimeout(function() {
+                        self.$nextTick(function() {
                             var containerWidth = container.clientWidth;
                             var contentWidth = content.scrollWidth;
                             var containerHeight = container.clientHeight;
                             var contentHeight = content.scrollHeight;
                             
-                            // Hitung scale otomatis jika lebar/tinggi silsilah melebihi layar
                             if (contentWidth > containerWidth || contentHeight > containerHeight) {
-                                // Sisakan margin (padding) 40px agar tidak terlalu mepet
-                                var scaleX = (containerWidth - 40) / contentWidth;
-                                var scaleY = (containerHeight - 40) / contentHeight;
+                                var scaleX = (containerWidth - 60) / contentWidth;
+                                var scaleY = (containerHeight - 60) / contentHeight;
                                 var bestScale = Math.min(scaleX, scaleY, 1);
                                 
-                                // Batasi minimum zoom 15% agar silsilah masih bisa terlihat (tidak sekecil debu)
                                 self.treeZoom = Math.max(bestScale, 0.15); 
                             } else {
                                 self.treeZoom = 1;
                             }
                             
-                            // Setelah Zoom diset, tunggu pergerakan CSS nya selesai (100ms) lalu bawa scroll ke tengah
-                            setTimeout(function() {
-                                self.centerTree();
-                            }, 100);
-                        }, 50);
+                            self.updateTreeBounds();
+                        });
                     }, 350); 
                 },
-                centerTree: function() {
-                    var container = document.getElementById('tree-scroll-container');
-                    var content = document.getElementById('tree-content');
-                    if (container && content) {
-                        // Menggunakan getBoundingClientRect agar mendapat lebar akurat yang SUDAH di-scale/zoom
-                        var scaledWidth = content.getBoundingClientRect().width;
-                        var scrollLeft = (scaledWidth - container.clientWidth) / 2;
+                updateTreeBounds: function() {
+                    var self = this;
+                    this.$nextTick(function() {
+                        var content = document.getElementById('tree-content');
+                        var container = document.getElementById('tree-scroll-container');
                         
-                        if (scrollLeft > 0) {
-                            container.scrollLeft = scrollLeft;
-                        } else {
-                            container.scrollLeft = 0;
+                        if (content && container) {
+                            // Hitung dimensi elemen secara proporsional sesuai dengan skala Zoom-nya
+                            var w = content.scrollWidth;
+                            var h = content.scrollHeight;
+                            
+                            self.treeWrapperWidth = (w * self.treeZoom + 40) + 'px';
+                            self.treeWrapperHeight = (h * self.treeZoom + 40) + 'px';
+                            
+                            // Scroll otomatis agar memusat tepat di tengah secara horizontal
+                            setTimeout(function() {
+                                var scrollLeft = ((w * self.treeZoom + 40) - container.clientWidth) / 2;
+                                container.scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
+                                container.scrollTop = 0; // Memaksa agar diagram tetap nempel atas
+                            }, 50);
                         }
-                    }
+                    });
                 },
 
                 // METHOD BARU UTK FORMAT LINK VIDEO/DRIVE
@@ -1818,10 +1835,12 @@
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify(payload)
+                            }).then(function() {
+                                setTimeout(function(){ self.loadFromSheet(); }, 3000); // Reload otomatis dari GDrive 3 detik setelah tersimpan
                             }).catch(function(e){ console.error(e) });
                         }
                         
-                        this.showAlert('Berhasil Disimpan', 'Data berhasil diperbarui di tampilan. Sedang mensinkronkan ke server secara diam-diam.', 'success');
+                        this.showAlert('Berhasil Disimpan', 'Data diperbarui di tampilan lokal. Sinkronisasi ke server sedang berjalan di latar belakang.', 'success');
                         this.isFormOpen = false;
 
                     } catch(err) {
@@ -1848,11 +1867,14 @@
                         safeSetStorage('silsilah_local_data', JSON.stringify(self.familyData));
 
                         if(self.appScriptUrl && member.id && String(member.id).indexOf('TMP_') !== 0) {
+                            var payload = { action: 'delete', id: String(member.id) };
                             fetch(self.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
-                                body: JSON.stringify({ action: 'delete', id: String(member.id) })
+                                body: JSON.stringify(payload)
+                            }).then(function() {
+                                setTimeout(function(){ self.loadFromSheet(); }, 2000);
                             }).catch(function(e) { console.error(e) });
                         }
                         self.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
@@ -1886,16 +1908,21 @@
 
                         if (this.appScriptUrl) {
                             var payload = { action: 'add_acara', data: newAcaraObj };
+                            
                             fetch(this.appScriptUrl, {
                                 method: 'POST',
-                                mode: 'no-cors',
-                                headers: { 'Content-Type': 'text/plain' },
+                                mode: 'no-cors', // Metode no-cors HARUS dipakai agar peramban tidak memblokir POST ini
+                                headers: { 'Content-Type': 'text/plain' }, // Pakai text/plain untuk mem-bypass CORS Check
                                 body: JSON.stringify(payload)
                             }).then(function() {
                                 self.finishSaveAcara();
+                                // Penyegaran latar belakang otomatis 3 detik kemudian untuk mengambil link gambar yang asli dari GDrive
+                                setTimeout(function() {
+                                    self.loadFromSheet();
+                                }, 3000);
                             }).catch(function(e) {
                                 console.error(e);
-                                self.showAlert('Error', 'Gagal memproses unggahan.', 'error');
+                                self.showAlert('Perhatian', 'Acara tersimpan di HP/Lokal, tetapi perangkat Anda gagal menghubungi server. Periksa koneksi internet Anda.', 'warning');
                                 self.isAcaraFormOpen = false;
                                 self.isSaving = false;
                             });
@@ -1913,7 +1940,7 @@
                 finishSaveAcara: function() {
                     this.isAcaraFormOpen = false;
                     this.formAcara = { judul: '', tanggal: '', jenis: 'Foto / Galeri', gdriveLink: '', fotos: [] };
-                    this.showAlert('Berhasil', 'Acara dan foto berhasil disimpan!', 'success');
+                    this.showAlert('Berhasil', 'Tersimpan lokal & proses memindah ke server sedang berjalan di latar belakang.', 'success');
                     this.isSaving = false;
                 },
 
@@ -1933,11 +1960,14 @@
                         safeSetStorage('silsilah_acara', JSON.stringify(self.acaraData));
                         
                         if(self.appScriptUrl && acaraObj.id) {
+                            var payload = { action: 'delete_acara', id: String(acaraObj.id) };
                             fetch(self.appScriptUrl, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'text/plain' },
-                                body: JSON.stringify({ action: 'delete_acara', id: String(acaraObj.id) })
+                                body: JSON.stringify(payload)
+                            }).then(function() {
+                                setTimeout(function(){ self.loadFromSheet(); }, 2000);
                             }).catch(function(e){ console.error(e) });
                         }
                         self.showAlert('Terhapus', 'Acara telah dihapus.', 'info');
