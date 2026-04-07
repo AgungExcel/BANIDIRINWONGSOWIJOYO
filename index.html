@@ -216,12 +216,13 @@
                         <div class="absolute top-2 right-2 md:top-4 md:right-4 z-20 flex flex-col gap-1.5 zoom-controls border border-gray-200 p-1.5 rounded-lg shadow-sm">
                             <button @click="zoomIn" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perbesar"><i class="fas fa-search-plus text-sm"></i></button>
                             <button @click="resetZoom" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 font-bold text-[10px] md:text-xs transition" title="Ukuran Asli">100%</button>
+                            <button @click="autoFitTree" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Paskan Layar"><i class="fas fa-compress text-sm"></i></button>
                             <button @click="zoomOut" class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-gray-200 rounded text-gray-700 transition" title="Perkecil"><i class="fas fa-search-minus text-sm"></i></button>
                         </div>
 
                         <!-- PERBAIKAN STRUKTUR CSS AGAR TREE CENTER DAN TIDAK TERPOTONG KIRI -->
-                        <div class="flex-1 w-full h-full overflow-auto relative text-center whitespace-nowrap">
-                            <div id="tree-content" class="inline-block min-w-full p-6 md:p-10 origin-top transition-transform duration-200" :style="{ transform: 'scale(' + treeZoom + ')' }">
+                        <div id="tree-scroll-container" class="flex-1 w-full h-full overflow-auto relative text-center whitespace-nowrap">
+                            <div id="tree-content" class="inline-block min-w-max p-6 md:p-10 transition-transform duration-300" :style="{ transform: 'scale(' + treeZoom + ')', transformOrigin: 'top center' }">
                                 <div class="tree" v-if="treeData.length > 0">
                                     <ul>
                                         <org-node v-for="node in treeData" :key="node.id" :node="node" @show-detail="openDetailModal"></org-node>
@@ -1073,6 +1074,8 @@
                 activeTab: function(newTab) {
                     if(newTab === 'home') {
                         this.renderCharts();
+                    } else if (newTab === 'tree') {
+                        this.autoFitTree();
                     }
                 },
                 familyData: {
@@ -1080,6 +1083,8 @@
                     handler: function() {
                         if(this.activeTab === 'home') {
                             this.renderCharts();
+                        } else if (this.activeTab === 'tree') {
+                            this.autoFitTree();
                         }
                     }
                 }
@@ -1097,6 +1102,10 @@
                 try {
                     self.calculateTodayJavanese();
                 } catch(e) { console.error(e); }
+                
+                if (this.activeTab === 'tree') {
+                    this.autoFitTree();
+                }
             },
             methods: {
                 shareApp: function() {
@@ -1305,10 +1314,58 @@
                     this.treeZoom = Math.min(2, this.treeZoom + 0.1);
                 },
                 zoomOut: function() {
-                    this.treeZoom = Math.max(0.3, this.treeZoom - 0.1);
+                    this.treeZoom = Math.max(0.15, this.treeZoom - 0.1);
                 },
                 resetZoom: function() {
                     this.treeZoom = 1;
+                    this.centerTree();
+                },
+                autoFitTree: function() {
+                    var self = this;
+                    this.$nextTick(function() {
+                        var container = document.getElementById('tree-scroll-container');
+                        var content = document.getElementById('tree-content');
+                        if (!container || !content) return;
+                        
+                        // Kembalikan ukuran asli untuk menghitung lebar sebenarnya
+                        self.treeZoom = 1;
+                        
+                        // Menunggu DOM dirender pada scale 1 sebelum kalkulasi
+                        setTimeout(function() {
+                            var containerWidth = container.clientWidth;
+                            var contentWidth = content.scrollWidth;
+                            var containerHeight = container.clientHeight;
+                            var contentHeight = content.scrollHeight;
+                            
+                            // Hitung scale otomatis jika lebar/tinggi silsilah melebihi layar
+                            if (contentWidth > containerWidth || contentHeight > containerHeight) {
+                                var scaleX = (containerWidth - 60) / contentWidth;
+                                var scaleY = (containerHeight - 60) / contentHeight;
+                                var bestScale = Math.min(scaleX, scaleY, 1);
+                                
+                                // Batasi minimum zoom (0.15 / 15%) agar tidak menjadi titik kecil tak terlihat
+                                self.treeZoom = Math.max(bestScale, 0.15); 
+                            } else {
+                                self.treeZoom = 1;
+                            }
+                            
+                            // Tunggu proses scaling CSS lalu otomatis letakkan scroll ke tengah-tengah
+                            setTimeout(function() {
+                                self.centerTree();
+                            }, 50);
+                        }, 50);
+                    });
+                },
+                centerTree: function() {
+                    this.$nextTick(function() {
+                        var container = document.getElementById('tree-scroll-container');
+                        if (container) {
+                            var scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+                            if (scrollLeft > 0) {
+                                container.scrollLeft = scrollLeft;
+                            }
+                        }
+                    });
                 },
 
                 // METHOD BARU UTK FORMAT LINK VIDEO/DRIVE
