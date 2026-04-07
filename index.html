@@ -338,7 +338,7 @@
                                 </div>
                                 <p class="text-gray-500 text-xs md:text-sm mb-3"><i class="far fa-calendar-alt mr-2"></i>{{ formatDateID(acara.tanggal) }}</p>
                                 
-                                <!-- FOTO ACARA BISA DI KLIK UNTUK MEMBUKA URL NYA (BARU) -->
+                                <!-- FOTO ACARA BISA DI KLIK UNTUK MEMBUKA URL NYA -->
                                 <div v-if="acara.fotos && acara.fotos.length > 0" class="flex gap-2 overflow-x-auto py-2 mb-2 scrollbar-hide">
                                     <a v-for="(foto, imgIndex) in acara.fotos" :key="imgIndex" :href="getSafeImageUrl(foto)" target="_blank" class="flex-shrink-0 relative group block rounded-md border border-gray-200 overflow-hidden shadow-sm">
                                         <img :src="getSafeImageUrl(foto)" class="w-16 h-16 object-cover group-hover:scale-110 transition-transform duration-300">
@@ -349,7 +349,7 @@
                                 </div>
                             </div>
                             <div class="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center">
-                                <!-- LINK VIDEO / GDRIVE FIX (BARU) -->
+                                <!-- LINK VIDEO / GDRIVE FIX -->
                                 <a v-if="acara.gdriveLink && acara.gdriveLink.trim() !== ''" :href="formatExternalUrl(acara.gdriveLink)" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs md:text-sm font-semibold flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-md">
                                     <i class="fab fa-google-drive"></i> Buka Link
                                 </a>
@@ -585,14 +585,52 @@
                     
                     <div class="pt-3 md:pt-4 border-t border-gray-100">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Link Tulis Data (URL Google Apps Script)</label>
-                        <p class="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Wajib diisi jika Anda ingin fitur <strong>Simpan/Upload Foto Langsung ke Server</strong> berfungsi.</p>
+                        <p class="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Masukkan URL Google Apps Script yang sudah Anda deploy.</p>
                         <input type="text" v-model="tempAppScriptUrl" placeholder="https://script.google.com/macros/s/AKfy.../exec" class="w-full border p-2 rounded-md text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-blue-50">
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 mt-5 md:mt-6">
+                <!-- KOTAK BANTUAN GOOGLE APPS SCRIPT -->
+                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center bg-yellow-50 p-3 md:p-4 rounded-lg border border-yellow-200">
+                    <div>
+                        <h4 class="text-xs md:text-sm font-bold text-yellow-800"><i class="fas fa-server mr-1"></i> Backend Apps Script</h4>
+                        <p class="text-[10px] md:text-xs text-yellow-700 mt-0.5">Wajib pasang script ini agar foto Acara & Profil terupload ke GDrive.</p>
+                    </div>
+                    <button @click="isScriptGuideOpen = true" class="px-3 py-1.5 md:px-4 md:py-2 bg-yellow-600 text-white rounded-md text-xs font-semibold hover:bg-yellow-700 shadow-sm flex items-center gap-1.5 whitespace-nowrap"><i class="fas fa-code"></i> Lihat Script</button>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-5 md:mt-6 pt-4 border-t">
                     <button @click="isSettingsOpen = false" class="px-3 py-1.5 md:px-4 md:py-2 bg-gray-200 rounded-md text-xs md:text-sm">Batal</button>
                     <button @click="saveSettings" class="px-3 py-1.5 md:px-4 md:py-2 bg-emerald-600 text-white rounded-md text-xs md:text-sm hover:bg-emerald-700">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: SCRIPT GUIDE (PANDUAN BACKEND GDRIVE) -->
+        <div v-if="isScriptGuideOpen" class="fixed inset-0 bg-black/60 z-[60] flex justify-center items-center p-4 print-hidden" @click.self="isScriptGuideOpen = false">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+                <div class="p-4 border-b bg-[#10b981] text-white rounded-t-xl flex justify-between items-center">
+                    <h3 class="font-bold text-lg md:text-xl"><i class="fas fa-code"></i> Kode Google Apps Script (Backend)</h3>
+                    <button @click="isScriptGuideOpen = false" class="text-white hover:text-gray-200 text-2xl leading-none">&times;</button>
+                </div>
+                <div class="p-4 md:p-6 overflow-y-auto flex-1 text-sm text-gray-700 space-y-3">
+                    <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs md:text-sm font-medium">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>PENTING:</strong> Jika foto Acara atau Profil Anda gagal masuk/terupload ke Google Drive, itu berarti Backend Google Apps Script (GAS) Anda belum bisa memproses format gambar (Base64). Silakan ikuti panduan di bawah:
+                    </div>
+                    
+                    <ol class="list-decimal list-inside space-y-2 text-xs md:text-sm ml-1 font-medium text-gray-600">
+                        <li>Buka Google Sheet database Anda, lalu klik menu <b>Ekstensi</b> > <b>Apps Script</b>.</li>
+                        <li>Hapus seluruh kode lama yang ada di dalam editor tersebut.</li>
+                        <li>Klik tombol <b class="text-emerald-600"><i class="fas fa-copy"></i> Copy Kode</b> di bawah ini, lalu Paste ke dalam editor Apps Script Anda.</li>
+                        <li><span class="text-red-600 font-bold">Langkah Wajib:</span> Temukan tulisan <code class="bg-gray-200 text-red-600 px-1 rounded">ID_FOLDER_GDRIVE_ANDA</code> di dalam kode, dan ganti dengan ID Folder Google Drive Anda (Pastikan folder tersebut sudah di-share "Siapa saja yang memiliki link").</li>
+                        <li>Klik <b>Terapkan (Deploy)</b> > <b>Deployment Baru</b> > Pilih jenis <b>Aplikasi Web (Web App)</b> > Akses: <b>Siapa saja (Anyone)</b>.</li>
+                        <li>Copy URL yang dihasilkan, lalu masukkan ke dalam kolom <i>Link Tulis Data (URL Google Apps Script)</i> di menu Pengaturan aplikasi ini.</li>
+                    </ol>
+                    
+                    <div class="relative mt-4 pt-2 border-t border-gray-200">
+                        <button @click="copyScript" class="absolute top-4 right-4 bg-emerald-500 text-white px-4 py-1.5 rounded text-xs shadow hover:bg-emerald-600 transition flex items-center gap-2 font-bold z-10"><i class="fas fa-copy"></i> Copy Kode</button>
+                        <textarea readonly class="w-full h-80 bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs outline-none resize-none pt-12 shadow-inner border border-gray-700">{{ appScriptTemplate }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -910,6 +948,7 @@
 
                     selectedMember: null,
                     isSettingsOpen: false,
+                    isScriptGuideOpen: false,
                     isAcaraFormOpen: false,
                     
                     isFormOpen: false,
@@ -946,7 +985,122 @@
                         statusKehidupan: 'Hidup', tglWafat: '', makam: '', namaAyah: '', namaIbu: '',
                         statusPernikahan: 'Belum Menikah', namaPasangan: '', urutanAnak: '', alamat: '', noHp: '',
                         statusRelasi: '', parentId: ''
-                    }
+                    },
+                    
+                    appScriptTemplate: `function doPost(e) {
+  try {
+    var request = JSON.parse(e.postData.contents);
+    var action = request.action;
+    var data = request.data;
+    var sheet = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 🔴 GANTI DENGAN ID FOLDER GOOGLE DRIVE ANDA (Folder harus Public)
+    var folderId = "ID_FOLDER_GDRIVE_ANDA"; 
+    
+    // --- 1. SIMPAN DATA ACARA & FOTO KE GDRIVE ---
+    if (action === 'add_acara') {
+      var ws = sheet.getSheetByName("Acara");
+      if (!ws) {
+        ws = sheet.insertSheet("Acara");
+        ws.appendRow(["id", "judul", "tanggal", "jenis", "gdriveLink", "fotos"]);
+      }
+      
+      var fotoUrls = [];
+      var folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
+      
+      if (data.fotos && data.fotos.length > 0) {
+        for (var i = 0; i < data.fotos.length; i++) {
+          var base64 = data.fotos[i].split(',')[1];
+          var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Acara_' + data.id + '_' + i + '.jpg');
+          var file = folder.createFile(blob);
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+          fotoUrls.push(file.getUrl());
+        }
+      }
+      
+      ws.appendRow([
+        data.id,
+        data.judul,
+        data.tanggal,
+        data.jenis,
+        data.gdriveLink || '',
+        fotoUrls.join(',')
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({"status":"success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // --- 2. SIMPAN DATA ANGGOTA KELUARGA ---
+    if (action === 'add' || action === 'edit') {
+      var ws = sheet.getSheetByName("Anggota");
+      if (!ws) {
+        ws = sheet.insertSheet("Anggota");
+        ws.appendRow(["id", "namaLengkap", "panggilan", "jk", "tempatLahir", "tglLahir", "statusKehidupan", "tglWafat", "makam", "namaAyah", "namaIbu", "statusPernikahan", "namaPasangan", "urutanAnak", "alamat", "noHp", "statusRelasi", "parentId", "foto"]);
+      }
+      
+      var fotoUrl = data.foto || '';
+      if (fotoUrl.indexOf('data:image') === 0) {
+        var folder = folderId === "ID_FOLDER_GDRIVE_ANDA" ? DriveApp.getRootFolder() : DriveApp.getFolderById(folderId);
+        var base64 = data.foto.split(',')[1];
+        var blob = Utilities.newBlob(Utilities.base64Decode(base64), 'image/jpeg', 'Profil_' + data.id + '.jpg');
+        var file = folder.createFile(blob);
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        fotoUrl = file.getUrl();
+      }
+      
+      if (action === 'add') {
+        ws.appendRow([
+          data.id, data.namaLengkap, data.panggilan, data.jk, data.tempatLahir, 
+          data.tglLahir, data.statusKehidupan, data.tglWafat, data.makam, data.namaAyah, 
+          data.namaIbu, data.statusPernikahan, data.namaPasangan, data.urutanAnak, 
+          data.alamat, data.noHp, data.statusRelasi, data.parentId, fotoUrl
+        ]);
+      } else if (action === 'edit') {
+         var dataRange = ws.getDataRange().getValues();
+         for (var i = 1; i < dataRange.length; i++) {
+           if (dataRange[i][0] == data.id) {
+             ws.getRange(i+1, 1, 1, 19).setValues([[
+               data.id, data.namaLengkap, data.panggilan, data.jk, data.tempatLahir, 
+               data.tglLahir, data.statusKehidupan, data.tglWafat, data.makam, data.namaAyah, 
+               data.namaIbu, data.statusPernikahan, data.namaPasangan, data.urutanAnak, 
+               data.alamat, data.noHp, data.statusRelasi, data.parentId, fotoUrl
+             ]]);
+             break;
+           }
+         }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"status":"success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // --- 3. HAPUS DATA ---
+    if (action === 'delete') {
+      var ws = sheet.getSheetByName("Anggota");
+      var dataRange = ws.getDataRange().getValues();
+      for (var i = 1; i < dataRange.length; i++) {
+         if (dataRange[i][0] == request.id) {
+           ws.deleteRow(i+1);
+           break;
+         }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"status":"success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'delete_acara') {
+      var ws = sheet.getSheetByName("Acara");
+      var dataRange = ws.getDataRange().getValues();
+      for (var i = 1; i < dataRange.length; i++) {
+         if (dataRange[i][0] == request.id) {
+           ws.deleteRow(i+1);
+           break;
+         }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"status":"success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({"status":"error", "message": err.message})).setMimeType(ContentService.MimeType.JSON);
+  }
+}`
                 }
             },
             computed: {
@@ -1108,6 +1262,20 @@
                 }
             },
             methods: {
+                copyScript: function() {
+                    try {
+                        var tempInput = document.createElement("textarea");
+                        tempInput.value = this.appScriptTemplate;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(tempInput);
+                        this.showAlert('Kode Tersalin!', 'Silakan Paste (Tempel) kode tersebut di Google Apps Script Anda.', 'success');
+                    } catch (err) {
+                        this.showAlert('Gagal Menyalin', 'Silakan block dan copy teks secara manual.', 'warning');
+                    }
+                },
+                
                 shareApp: function() {
                     var shareData = {
                         title: 'Silsilah Digital - Bani Dirin',
@@ -1322,50 +1490,52 @@
                 },
                 autoFitTree: function() {
                     var self = this;
-                    this.$nextTick(function() {
+                    // Beri jeda panjang (150ms) agar elemen Tree yang disembunyikan oleh v-if sudah benar-benar selesai dirender oleh browser
+                    setTimeout(function() {
                         var container = document.getElementById('tree-scroll-container');
                         var content = document.getElementById('tree-content');
                         if (!container || !content) return;
                         
-                        // Kembalikan ukuran asli untuk menghitung lebar sebenarnya
+                        // Reset zoom agar ukuran yang terdeteksi adalah ukuran asli
                         self.treeZoom = 1;
                         
-                        // Menunggu DOM dirender pada scale 1 sebelum kalkulasi
+                        // Force DOM reflow agar browser mereset ukuran
+                        void content.offsetWidth;
+                        
                         setTimeout(function() {
                             var containerWidth = container.clientWidth;
                             var contentWidth = content.scrollWidth;
                             var containerHeight = container.clientHeight;
                             var contentHeight = content.scrollHeight;
                             
-                            // Hitung scale otomatis jika lebar/tinggi silsilah melebihi layar
                             if (contentWidth > containerWidth || contentHeight > containerHeight) {
-                                var scaleX = (containerWidth - 60) / contentWidth;
-                                var scaleY = (containerHeight - 60) / contentHeight;
+                                // Sisakan 40px padding sebagai ruang lega
+                                var scaleX = (containerWidth - 40) / contentWidth;
+                                var scaleY = (containerHeight - 40) / contentHeight;
                                 var bestScale = Math.min(scaleX, scaleY, 1);
                                 
-                                // Batasi minimum zoom (0.15 / 15%) agar tidak menjadi titik kecil tak terlihat
-                                self.treeZoom = Math.max(bestScale, 0.15); 
+                                self.treeZoom = Math.max(bestScale, 0.15); // Minimal zoom 15%
                             } else {
                                 self.treeZoom = 1;
                             }
                             
-                            // Tunggu proses scaling CSS lalu otomatis letakkan scroll ke tengah-tengah
+                            // Tunggu transisi zoom selesai lalu pas-kan ke tengah
                             setTimeout(function() {
                                 self.centerTree();
-                            }, 50);
-                        }, 50);
-                    });
+                            }, 150);
+                        }, 100);
+                    }, 150);
                 },
                 centerTree: function() {
-                    this.$nextTick(function() {
-                        var container = document.getElementById('tree-scroll-container');
-                        if (container) {
-                            var scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-                            if (scrollLeft > 0) {
-                                container.scrollLeft = scrollLeft;
-                            }
+                    var container = document.getElementById('tree-scroll-container');
+                    if (container) {
+                        var scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+                        if (scrollLeft > 0) {
+                            container.scrollLeft = scrollLeft;
+                        } else {
+                            container.scrollLeft = 0;
                         }
-                    });
+                    }
                 },
 
                 // METHOD BARU UTK FORMAT LINK VIDEO/DRIVE
@@ -1656,9 +1826,8 @@
                                 headers: { 'Content-Type': 'text/plain' },
                                 body: JSON.stringify({ action: 'delete', id: String(member.id) })
                             }).catch(function(e) { console.error(e) });
-                            
-                            self.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
                         }
+                        self.showAlert('Hapus Berhasil', "Data berhasil dihapus.", 'success');
                     });
                 },
 
@@ -1743,7 +1912,7 @@
                                 body: JSON.stringify({ action: 'delete_acara', id: String(acaraObj.id) })
                             }).catch(function(e){ console.error(e) });
                         }
-                        this.showAlert('Terhapus', 'Acara telah dihapus.', 'info');
+                        self.showAlert('Terhapus', 'Acara telah dihapus.', 'info');
                     });
                 },
 
